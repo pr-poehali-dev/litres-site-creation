@@ -59,6 +59,13 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
       return;
     }
 
+    console.log('Submitting track:', {
+      title: formData.title,
+      artist: formData.artist,
+      hasCover: !!formData.cover,
+      hasAudio: !!formData.audioUrl
+    });
+
     addTrack(formData);
     
     toast({

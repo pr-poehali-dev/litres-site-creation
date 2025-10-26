@@ -29,9 +29,16 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    const savedTracks = localStorage.getItem('music_tracks');
-    if (savedTracks) {
-      setTracks(JSON.parse(savedTracks));
+    try {
+      const savedTracks = localStorage.getItem('music_tracks');
+      if (savedTracks) {
+        const parsed = JSON.parse(savedTracks);
+        setTracks(parsed);
+        console.log('Loaded tracks from localStorage:', parsed.length);
+      }
+    } catch (error) {
+      console.error('Failed to load tracks from localStorage:', error);
+      localStorage.removeItem('music_tracks');
     }
   }, []);
 
@@ -42,7 +49,16 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     };
     const updatedTracks = [...tracks, newTrack];
     setTracks(updatedTracks);
-    localStorage.setItem('music_tracks', JSON.stringify(updatedTracks));
+    
+    try {
+      const serialized = JSON.stringify(updatedTracks);
+      localStorage.setItem('music_tracks', serialized);
+      console.log('Track saved successfully. Total tracks:', updatedTracks.length);
+    } catch (error) {
+      console.error('Failed to save track to localStorage:', error);
+      alert('Ошибка: Файл слишком большой для сохранения. Попробуйте меньший файл.');
+      setTracks(tracks);
+    }
   };
 
   const deleteTrack = (trackId: number) => {
