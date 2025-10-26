@@ -88,6 +88,16 @@ const Index = () => {
   });
 
   const toggleFavorite = (bookId: number) => {
+    if (!isAuthenticated) {
+      setAuthDialogOpen(true);
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите в систему, чтобы добавить книгу в избранное',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setFavorites(prev => 
       prev.includes(bookId) 
         ? prev.filter(id => id !== bookId)
