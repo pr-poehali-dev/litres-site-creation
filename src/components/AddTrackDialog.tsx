@@ -30,7 +30,7 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, cover: reader.result as string });
+        setFormData(prev => ({ ...prev, cover: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -41,7 +41,7 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, audioUrl: reader.result as string });
+        setFormData(prev => ({ ...prev, audioUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
