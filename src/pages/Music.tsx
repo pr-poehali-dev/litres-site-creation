@@ -27,21 +27,21 @@ const Music = () => {
         onAddBookOpen={() => setAddBookOpen(true)}
       />
 
-      <main className="container mx-auto px-4 py-8 pb-32">
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+      <main className="container mx-auto px-4 py-4 md:py-8 pb-32 md:pb-40">
+        <div className="mb-6 md:mb-8 animate-fade-in">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Музыка
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm md:text-base text-muted-foreground">
                 Слушайте вашу любимую музыку онлайн
               </p>
             </div>
             {isAdmin && (
-              <Button onClick={() => setAddTrackOpen(true)} size="lg" className="pulse-glow">
-                <Icon name="Plus" size={20} className="mr-2" />
-                Добавить трек
+              <Button onClick={() => setAddTrackOpen(true)} size="default" className="pulse-glow flex-shrink-0">
+                <Icon name="Plus" size={18} className="md:mr-2" />
+                <span className="hidden md:inline">Добавить трек</span>
               </Button>
             )}
           </div>

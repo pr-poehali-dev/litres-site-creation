@@ -96,6 +96,18 @@
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
   }
 
   h1,
@@ -138,11 +150,18 @@
       box-shadow 0.3s ease;
   }
 
-  .hover-lift:hover {
+  .hover-lift:hover,
+  .hover-lift:active {
     transform: translateY(-4px);
     box-shadow:
       0 20px 25px -5px rgba(0, 0, 0, 0.1),
       0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  @media (max-width: 768px) {
+    .hover-lift:active {
+      transform: translateY(-2px);
+    }
   }
 
   .pulse-ring {

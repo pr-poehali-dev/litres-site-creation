@@ -40,8 +40,8 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
       className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in"
       style={{ animationDelay: `${index * 30}ms` }}
     >
-      <div className="flex items-center gap-4 p-4">
-        <div className="relative w-20 h-20 flex-shrink-0">
+      <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4">
+        <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
           {track.cover ? (
             <img
               src={track.cover}
@@ -54,57 +54,64 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
             />
           ) : null}
           <div className={`w-full h-full rounded-lg bg-muted flex items-center justify-center ${track.cover ? 'hidden' : ''}`}>
-            <Icon name="Music" size={32} className="text-muted-foreground" />
+            <Icon name="Music" size={24} className="text-muted-foreground md:w-8 md:h-8" />
           </div>
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
             <Button
               size="icon"
               variant="secondary"
-              className="w-10 h-10 rounded-full pulse-glow"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full pulse-glow"
               onClick={handlePlayPause}
             >
               <Icon 
                 name={isCurrentTrack && isPlaying ? "Pause" : "Play"} 
-                size={20} 
+                size={16}
+                className="md:w-5 md:h-5"
                 fill="currentColor"
               />
             </Button>
           </div>
           {isCurrentTrack && isPlaying && (
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-pulse">
-              <Icon name="Volume2" size={12} className="text-primary-foreground" />
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-primary rounded-full flex items-center justify-center animate-pulse">
+              <Icon name="Volume2" size={10} className="text-primary-foreground md:w-3 md:h-3" />
             </div>
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-lg line-clamp-1 mb-1">{track.title}</h3>
-          <p className="text-sm text-muted-foreground mb-2">{track.artist}</p>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Icon name="Music" size={12} />
-              {track.genre}
-            </span>
-            <span className="flex items-center gap-1">
-              <Icon name="Calendar" size={12} />
-              {track.year}
-            </span>
-            <span className="flex items-center gap-1">
-              <Icon name="Clock" size={12} />
-              {track.duration}
-            </span>
+          <h3 className="font-semibold text-base md:text-lg line-clamp-1 mb-0.5 md:mb-1">{track.title}</h3>
+          <p className="text-xs md:text-sm text-muted-foreground mb-1 md:mb-2 line-clamp-1">{track.artist}</p>
+          <div className="flex items-center gap-2 md:gap-3 text-xs text-muted-foreground flex-wrap">
+            {track.genre && (
+              <span className="flex items-center gap-1">
+                <Icon name="Music" size={10} className="md:w-3 md:h-3" />
+                <span className="line-clamp-1">{track.genre}</span>
+              </span>
+            )}
+            {track.year && (
+              <span className="hidden sm:flex items-center gap-1">
+                <Icon name="Calendar" size={10} className="md:w-3 md:h-3" />
+                {track.year}
+              </span>
+            )}
+            {track.duration && (
+              <span className="flex items-center gap-1">
+                <Icon name="Clock" size={10} className="md:w-3 md:h-3" />
+                {track.duration}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {isAdmin && (
             <Button
               size="icon"
               variant="ghost"
-              className="text-destructive hover:text-destructive"
+              className="text-destructive hover:text-destructive w-8 h-8 md:w-10 md:h-10"
               onClick={() => deleteTrack(track.id)}
             >
-              <Icon name="Trash2" size={18} />
+              <Icon name="Trash2" size={16} className="md:w-[18px] md:h-[18px]" />
             </Button>
           )}
         </div>

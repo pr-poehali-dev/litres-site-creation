@@ -22,11 +22,11 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Icon name="BookOpen" className="text-primary" size={32} />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full" />
+              <Icon name="BookOpen" className="text-primary" size={28} />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-ping" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
             </div>
-            <h1 className="text-2xl font-bold text-primary">Pulse Book</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-primary">Pulse Book</h1>
           </div>
           
           <nav className="hidden md:flex items-center gap-6">
@@ -49,14 +49,19 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
             </Button>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {isAdmin && (
-              <Button onClick={onAddBookOpen}>
+              <Button onClick={onAddBookOpen} className="hidden sm:flex">
                 <Icon name="Plus" size={18} className="mr-2" />
                 Добавить книгу
               </Button>
             )}
-            <Button variant="ghost" size="icon">
+            {isAdmin && (
+              <Button onClick={onAddBookOpen} size="icon" className="sm:hidden">
+                <Icon name="Plus" size={18} />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="hidden sm:flex">
               <Icon name="Heart" size={20} />
             </Button>
             <Button 
