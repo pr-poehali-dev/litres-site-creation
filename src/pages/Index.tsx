@@ -1,12 +1,386 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import Icon from '@/components/ui/icon';
+
+const mockBooks = [
+  {
+    id: 1,
+    title: 'Мастер и Маргарита',
+    author: 'Михаил Булгаков',
+    genre: 'Классика',
+    rating: 4.8,
+    price: 299,
+    cover: 'https://cdn.poehali.dev/projects/f1523a20-2ec4-4290-becf-0f259b3f9e36/files/6c6cbc3c-6cff-4ccb-8ccf-4bbbde62c1c7.jpg',
+    description: 'Культовый роман о добре и зле, любви и предательстве'
+  },
+  {
+    id: 2,
+    title: 'Война и мир',
+    author: 'Лев Толстой',
+    genre: 'Классика',
+    rating: 4.9,
+    price: 499,
+    cover: 'https://cdn.poehali.dev/projects/f1523a20-2ec4-4290-becf-0f259b3f9e36/files/18c15662-722a-4d22-a20c-bbcaec2e49ca.jpg',
+    description: 'Эпический роман о русском обществе в эпоху войн с Наполеоном'
+  },
+  {
+    id: 3,
+    title: 'Преступление и наказание',
+    author: 'Фёдор Достоевский',
+    genre: 'Классика',
+    rating: 4.7,
+    price: 349,
+    cover: '/placeholder.svg',
+    description: 'Психологический роман о моральных дилеммах и искуплении'
+  },
+  {
+    id: 4,
+    title: 'Анна Каренина',
+    author: 'Лев Толстой',
+    genre: 'Классика',
+    rating: 4.6,
+    price: 399,
+    cover: '/placeholder.svg',
+    description: 'История трагической любви на фоне высшего общества России'
+  },
+  {
+    id: 5,
+    title: 'Метро 2033',
+    author: 'Дмитрий Глуховский',
+    genre: 'Фантастика',
+    rating: 4.5,
+    price: 279,
+    cover: 'https://cdn.poehali.dev/projects/f1523a20-2ec4-4290-becf-0f259b3f9e36/files/bf137df1-e725-4114-a1c3-fc0211ec50fd.jpg',
+    description: 'Постапокалиптический роман о выживании в московском метро'
+  },
+  {
+    id: 6,
+    title: 'Пикник на обочине',
+    author: 'Аркадий и Борис Стругацкие',
+    genre: 'Фантастика',
+    rating: 4.7,
+    price: 259,
+    cover: '/placeholder.svg',
+    description: 'Философская фантастика о Зоне и сталкерах'
+  }
+];
+
+const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Бизнес'];
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState('Все жанры');
+  const [favorites, setFavorites] = useState<number[]>([]);
+
+  const filteredBooks = mockBooks.filter(book => {
+    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         book.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesGenre = selectedGenre === 'Все жанры' || book.genre === selectedGenre;
+    return matchesSearch && matchesGenre;
+  });
+
+  const toggleFavorite = (bookId: number) => {
+    setFavorites(prev => 
+      prev.includes(bookId) 
+        ? prev.filter(id => id !== bookId)
+        : [...prev, bookId]
+    );
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Icon name="BookOpen" className="text-primary" size={32} />
+              <h1 className="text-2xl font-bold text-primary">BookStore</h1>
+            </div>
+            
+            <nav className="hidden md:flex items-center gap-6">
+              <Button variant="ghost" className="text-sm font-medium">
+                <Icon name="Home" size={18} className="mr-2" />
+                Главная
+              </Button>
+              <Button variant="ghost" className="text-sm font-medium">
+                <Icon name="Sparkles" size={18} className="mr-2" />
+                Новинки
+              </Button>
+              <Button variant="ghost" className="text-sm font-medium">
+                <Icon name="Library" size={18} className="mr-2" />
+                Каталог
+              </Button>
+              <Button variant="ghost" className="text-sm font-medium">
+                <Icon name="Users" size={18} className="mr-2" />
+                Авторы
+              </Button>
+            </nav>
+
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon">
+                <Icon name="Heart" size={20} />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <Icon name="User" size={20} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8 space-y-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+              <Input
+                type="text"
+                placeholder="Поиск книг, авторов..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-12"
+              />
+            </div>
+            <Button size="lg" className="h-12 px-8">
+              <Icon name="Search" size={20} className="mr-2" />
+              Найти
+            </Button>
+          </div>
+
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-2 pb-2">
+              {genres.map((genre) => (
+                <Badge
+                  key={genre}
+                  variant={selectedGenre === genre ? "default" : "outline"}
+                  className="cursor-pointer px-4 py-2 text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
+                  onClick={() => setSelectedGenre(genre)}
+                >
+                  {genre}
+                </Badge>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+
+        <Tabs defaultValue="catalog" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
+            <TabsTrigger value="catalog">
+              <Icon name="Grid3x3" size={18} className="mr-2" />
+              Каталог
+            </TabsTrigger>
+            <TabsTrigger value="new">
+              <Icon name="Sparkles" size={18} className="mr-2" />
+              Новинки
+            </TabsTrigger>
+            <TabsTrigger value="favorites">
+              <Icon name="Heart" size={18} className="mr-2" />
+              Избранное
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="catalog" className="mt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredBooks.map((book, index) => (
+                <Card
+                  key={book.id}
+                  className="group overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                    <img
+                      src={book.cover}
+                      alt={book.title}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <Button
+                      size="icon"
+                      variant={favorites.includes(book.id) ? "default" : "secondary"}
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => toggleFavorite(book.id)}
+                    >
+                      <Icon name="Heart" size={18} fill={favorites.includes(book.id) ? "currentColor" : "none"} />
+                    </Button>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-lg line-clamp-1 mb-1">{book.title}</h3>
+                      <p className="text-sm text-muted-foreground">{book.author}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{book.description}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <Icon name="Star" size={16} className="text-yellow-500" fill="currentColor" />
+                        <span className="text-sm font-medium">{book.rating}</span>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">{book.genre}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-xl font-bold text-primary">{book.price} ₽</span>
+                      <Button size="sm">
+                        <Icon name="ShoppingCart" size={16} className="mr-2" />
+                        Купить
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="new" className="mt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredBooks.slice(0, 4).map((book, index) => (
+                <Card
+                  key={book.id}
+                  className="group overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                    <img
+                      src={book.cover}
+                      alt={book.title}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <Badge className="absolute top-3 left-3">Новинка</Badge>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-lg line-clamp-1 mb-1">{book.title}</h3>
+                      <p className="text-sm text-muted-foreground">{book.author}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{book.description}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <Icon name="Star" size={16} className="text-yellow-500" fill="currentColor" />
+                        <span className="text-sm font-medium">{book.rating}</span>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">{book.genre}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-xl font-bold text-primary">{book.price} ₽</span>
+                      <Button size="sm">
+                        <Icon name="ShoppingCart" size={16} className="mr-2" />
+                        Купить
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="favorites" className="mt-0">
+            {favorites.length === 0 ? (
+              <div className="text-center py-16">
+                <Icon name="Heart" size={64} className="mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Избранное пусто</h3>
+                <p className="text-muted-foreground">Добавьте книги в избранное, чтобы они отображались здесь</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredBooks.filter(book => favorites.includes(book.id)).map((book, index) => (
+                  <Card
+                    key={book.id}
+                    className="group overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                      <img
+                        src={book.cover}
+                        alt={book.title}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <Button
+                        size="icon"
+                        variant="default"
+                        className="absolute top-3 right-3"
+                        onClick={() => toggleFavorite(book.id)}
+                      >
+                        <Icon name="Heart" size={18} fill="currentColor" />
+                      </Button>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-lg line-clamp-1 mb-1">{book.title}</h3>
+                        <p className="text-sm text-muted-foreground">{book.author}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{book.description}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <Icon name="Star" size={16} className="text-yellow-500" fill="currentColor" />
+                          <span className="text-sm font-medium">{book.rating}</span>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">{book.genre}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-xl font-bold text-primary">{book.price} ₽</span>
+                        <Button size="sm">
+                          <Icon name="ShoppingCart" size={16} className="mr-2" />
+                          Купить
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      <footer className="border-t mt-16 py-8 bg-card">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="font-semibold mb-4">О магазине</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>О нас</li>
+                <li>Контакты</li>
+                <li>Вакансии</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Покупателям</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>Как купить</li>
+                <li>Доставка</li>
+                <li>Оплата</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Сотрудничество</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>Для авторов</li>
+                <li>Для издательств</li>
+                <li>Партнерам</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Соцсети</h3>
+              <div className="flex gap-3">
+                <Button variant="outline" size="icon">
+                  <Icon name="Facebook" size={18} />
+                </Button>
+                <Button variant="outline" size="icon">
+                  <Icon name="Twitter" size={18} />
+                </Button>
+                <Button variant="outline" size="icon">
+                  <Icon name="Instagram" size={18} />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+            © 2024 BookStore. Все права защищены.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
