@@ -94,12 +94,19 @@ export const MusicPlayer = () => {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {currentTrack.cover && (
+              {currentTrack.cover ? (
                 <img
                   src={currentTrack.cover}
                   alt={currentTrack.title}
                   className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
+              ) : (
+                <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                  <Icon name="Music" size={24} className="text-muted-foreground" />
+                </div>
               )}
               <div className="min-w-0 flex-1">
                 <h4 className="font-semibold line-clamp-1">{currentTrack.title}</h4>

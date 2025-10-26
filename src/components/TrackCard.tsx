@@ -42,11 +42,20 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
     >
       <div className="flex items-center gap-4 p-4">
         <div className="relative w-20 h-20 flex-shrink-0">
-          <img
-            src={track.cover}
-            alt={track.title}
-            className="w-full h-full object-cover rounded-lg"
-          />
+          {track.cover ? (
+            <img
+              src={track.cover}
+              alt={track.title}
+              className="w-full h-full object-cover rounded-lg"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          <div className={`w-full h-full rounded-lg bg-muted flex items-center justify-center ${track.cover ? 'hidden' : ''}`}>
+            <Icon name="Music" size={32} className="text-muted-foreground" />
+          </div>
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
             <Button
               size="icon"
