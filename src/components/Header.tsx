@@ -30,7 +30,7 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
           </div>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Button variant="ghost" className="text-sm font-medium">
+            <Button variant="ghost" className="text-sm font-medium" onClick={() => navigate('/')}>
               <Icon name="Home" size={18} className="mr-2" />
               Главная
             </Button>
@@ -45,6 +45,10 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
             <Button variant="ghost" className="text-sm font-medium">
               <Icon name="Users" size={18} className="mr-2" />
               Авторы
+            </Button>
+            <Button variant="ghost" className="text-sm font-medium" onClick={() => navigate('/music')}>
+              <Icon name="Music" size={18} className="mr-2" />
+              Музыка
             </Button>
           </nav>
 
