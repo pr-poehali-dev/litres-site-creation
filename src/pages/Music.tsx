@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { AuthDialog } from '@/components/AuthDialog';
-import { CartDialog } from '@/components/CartDialog';
+import { CartDrawer } from '@/components/CartDrawer';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { AddTrackDialog } from '@/components/AddTrackDialog';
 import { TrackCard } from '@/components/TrackCard';
@@ -81,7 +81,7 @@ const Music = () => {
       <MusicPlayer />
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
-      <CartDialog open={cartOpen} onOpenChange={setCartOpen} />
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
       <AddBookDialog open={addBookOpen} onOpenChange={setAddBookOpen} />
       <AddTrackDialog open={addTrackOpen} onOpenChange={setAddTrackOpen} />
     </div>
