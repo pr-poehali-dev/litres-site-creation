@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useBooks } from '@/contexts/BookContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useBooks, BookFormat } from '@/contexts/BookContext';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
@@ -14,14 +15,29 @@ interface AddBookDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const availableFormats = [
+  { value: 'fb2', label: 'Fb2 - Для смартфонов, планшетов Android, электронных книг' },
+  { value: 'txt', label: 'TXT - Можно открыть почти на любом устройстве' },
+  { value: 'rtf', label: 'RTF - Можно открыть на любом компьютере' },
+  { value: 'pdf-a4', label: 'PDF A4 - Программа Adobe Reader' },
+  { value: 'pdf-a6', label: 'PDF A6 - Оптимизирован для смартфонов' },
+  { value: 'mobi', label: 'Mobi - Электронные книги Kindle и Android' },
+  { value: 'epub', label: 'Epub - iOS (iPhone, iPad, iMac) и большинство приложений' },
+  { value: 'ios-epub', label: 'iOS.Epub - Идеально для iPhone и iPad' },
+  { value: 'fb3', label: 'Fb3 - Развитие формата FB2' },
+];
+
 export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [genre, setGenre] = useState('');
   const [price, setPrice] = useState('');
   const [rating, setRating] = useState('');
-  const [cover, setCover] = useState('');
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string>('');
   const [description, setDescription] = useState('');
+  const [selectedFormats, setSelectedFormats] = useState<Set<string>>(new Set());
+  const [bookFiles, setBookFiles] = useState<Map<string, File>>(new Map());
   const [loading, setLoading] = useState(false);
 
   const { addBook } = useBooks();
@@ -33,8 +49,45 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
     setGenre('');
     setPrice('');
     setRating('');
-    setCover('');
+    setCoverFile(null);
+    setCoverPreview('');
     setDescription('');
+    setSelectedFormats(new Set());
+    setBookFiles(new Map());
+  };
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFormatToggle = (format: string) => {
+    const newFormats = new Set(selectedFormats);
+    if (newFormats.has(format)) {
+      newFormats.delete(format);
+      const newFiles = new Map(bookFiles);
+      newFiles.delete(format);
+      setBookFiles(newFiles);
+    } else {
+      newFormats.add(format);
+    }
+    setSelectedFormats(newFormats);
+  };
+
+  const handleBookFileChange = (format: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newFiles = new Map(bookFiles);
+      newFiles.set(format, file);
+      setBookFiles(newFiles);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,19 +95,61 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
     setLoading(true);
 
     try {
+      if (selectedFormats.size === 0) {
+        toast({
+          title: 'Ошибка',
+          description: 'Выберите хотя бы один формат книги',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      for (const format of selectedFormats) {
+        if (!bookFiles.has(format)) {
+          toast({
+            title: 'Ошибка',
+            description: `Загрузите файл для формата ${format.toUpperCase()}`,
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      let coverUrl = '/placeholder.svg';
+      if (coverFile) {
+        const reader = new FileReader();
+        coverUrl = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(coverFile);
+        });
+      }
+
+      const formats: BookFormat[] = [];
+      for (const [format, file] of bookFiles) {
+        const reader = new FileReader();
+        const fileUrl = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+        formats.push({ format, fileUrl });
+      }
+
       addBook({
         title,
         author,
         genre,
         price: parseFloat(price),
         rating: parseFloat(rating),
-        cover: cover || '/placeholder.svg',
+        cover: coverUrl,
         description,
+        formats,
       });
 
       toast({
         title: 'Книга добавлена!',
-        description: `${title} успешно добавлена в каталог`,
+        description: `${title} успешно добавлена в каталог с ${formats.length} форматами`,
       });
 
       resetForm();
@@ -66,7 +161,7 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Добавить новую книгу</DialogTitle>
         </DialogHeader>
@@ -141,21 +236,23 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cover">URL обложки</Label>
+            <Label htmlFor="cover">Обложка книги *</Label>
             <Input
               id="cover"
-              type="url"
-              placeholder="https://example.com/cover.jpg"
-              value={cover}
-              onChange={(e) => setCover(e.target.value)}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverChange}
+              required
             />
-            <p className="text-xs text-muted-foreground">
-              Оставьте пустым для использования заглушки
-            </p>
+            {coverPreview && (
+              <div className="mt-2">
+                <img src={coverPreview} alt="Превью обложки" className="w-32 h-48 object-cover rounded" />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Описание *</Label>
+            <Label htmlFor="description">Краткое описание *</Label>
             <Textarea
               id="description"
               placeholder="Краткое описание книги..."
@@ -164,6 +261,46 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
               rows={3}
               required
             />
+          </div>
+
+          <div className="space-y-3">
+            <Label>Форматы книги *</Label>
+            <div className="border rounded-lg p-4 space-y-3 max-h-[300px] overflow-y-auto">
+              {availableFormats.map((format) => (
+                <div key={format.value} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={format.value}
+                      checked={selectedFormats.has(format.value)}
+                      onCheckedChange={() => handleFormatToggle(format.value)}
+                    />
+                    <label
+                      htmlFor={format.value}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {format.label}
+                    </label>
+                  </div>
+                  {selectedFormats.has(format.value) && (
+                    <div className="ml-6">
+                      <Input
+                        type="file"
+                        accept={`.${format.value.split('-')[0]}`}
+                        onChange={(e) => handleBookFileChange(format.value, e)}
+                        className="text-sm"
+                        required
+                      />
+                      {bookFiles.has(format.value) && (
+                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <Icon name="CheckCircle" size={12} />
+                          {bookFiles.get(format.value)?.name}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           <DialogFooter className="gap-2">

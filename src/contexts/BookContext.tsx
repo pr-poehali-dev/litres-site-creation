@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+export interface BookFormat {
+  format: string;
+  fileUrl: string;
+}
+
 export interface Book {
   id: number;
   title: string;
@@ -9,6 +14,7 @@ export interface Book {
   price: number;
   cover: string;
   description: string;
+  formats: BookFormat[];
 }
 
 interface BookContextType {
