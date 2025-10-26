@@ -26,6 +26,7 @@ const Index = () => {
   const { addToCart } = useCart();
   const { books } = useBooks();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,6 +56,16 @@ const Index = () => {
   }, []);
 
   const handleAddToCart = (book: typeof books[0]) => {
+    if (!isAuthenticated) {
+      setAuthDialogOpen(true);
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите в систему, чтобы добавить книгу в корзину',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     addToCart({
       id: book.id,
       title: book.title,
