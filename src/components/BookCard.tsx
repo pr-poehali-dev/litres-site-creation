@@ -30,11 +30,11 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
       className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      <div className="relative aspect-[2/3] overflow-hidden bg-white shimmer-effect touch-manipulation">
+      <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shimmer-effect touch-manipulation rounded-t-lg">
         <img
           src={book.cover}
           alt={book.title}
-          className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
+          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-300" />
         
