@@ -42,10 +42,7 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
               <Icon name="Library" size={18} className="mr-2" />
               Каталог
             </Button>
-            <Button variant="ghost" className="text-sm font-medium">
-              <Icon name="Users" size={18} className="mr-2" />
-              Авторы
-            </Button>
+
             <Button variant="ghost" className="text-sm font-medium" onClick={() => navigate('/music')}>
               <Icon name="Music" size={18} className="mr-2" />
               Музыка
