@@ -58,7 +58,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         if (success) {
           toast({
             title: 'Регистрация успешна!',
-            description: 'Добро пожаловать в BookStore',
+            description: 'Добро пожаловать в Pulse Book',
           });
           onOpenChange(false);
           resetForm();
