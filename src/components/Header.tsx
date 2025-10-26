@@ -20,7 +20,7 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
     <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
             <div className="relative">
               <Icon name="BookOpen" className="text-primary" size={28} />
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-ping" />
