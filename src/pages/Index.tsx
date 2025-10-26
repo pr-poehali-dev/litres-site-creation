@@ -10,20 +10,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { useBooks } from '@/contexts/BookContext';
 import { AuthDialog } from '@/components/AuthDialog';
 import { CartDrawer } from '@/components/CartDrawer';
+import { AddBookDialog } from '@/components/AddBookDialog';
 import { useToast } from '@/hooks/use-toast';
 
-const mockBooks: Array<{
-  id: number;
-  title: string;
-  author: string;
-  genre: string;
-  rating: number;
-  price: number;
-  cover: string;
-  description: string;
-}> = [];
+
 
 const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Бизнес'];
 
@@ -34,11 +27,13 @@ const Index = () => {
   const [favorites, setFavorites] = useState<number[]>([]);
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const { user, logout, isAuthenticated } = useAuth();
+  const [addBookOpen, setAddBookOpen] = useState(false);
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const { addToCart, itemCount } = useCart();
+  const { books } = useBooks();
   const { toast } = useToast();
 
-  const handleAddToCart = (book: typeof mockBooks[0]) => {
+  const handleAddToCart = (book: typeof books[0]) => {
     addToCart({
       id: book.id,
       title: book.title,
@@ -53,7 +48,7 @@ const Index = () => {
     });
   };
 
-  const filteredBooks = mockBooks.filter(book => {
+  const filteredBooks = books.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          book.author.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGenre = selectedGenre === 'Все жанры' || book.genre === selectedGenre;
@@ -98,6 +93,12 @@ const Index = () => {
             </nav>
 
             <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button onClick={() => setAddBookOpen(true)}>
+                  <Icon name="Plus" size={18} className="mr-2" />
+                  Добавить книгу
+                </Button>
+              )}
               <Button variant="ghost" size="icon">
                 <Icon name="Heart" size={20} />
               </Button>
@@ -411,6 +412,7 @@ const Index = () => {
         onOpenChange={setCartOpen}
         onAuthRequired={() => setAuthDialogOpen(true)}
       />
+      <AddBookDialog open={addBookOpen} onOpenChange={setAddBookOpen} />
     </div>
   );
 };

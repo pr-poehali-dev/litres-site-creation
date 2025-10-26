@@ -4,6 +4,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -12,6 +13,7 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,10 +33,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const foundUser = users.find((u: any) => u.email === email && u.password === password);
 
     if (foundUser) {
+      const isAdmin = foundUser.email === 'swi79@bk.ru';
       const userData = {
         id: foundUser.id,
         email: foundUser.email,
-        name: foundUser.name
+        name: foundUser.name,
+        isAdmin
       };
       setUser(userData);
       localStorage.setItem('bookstore_user', JSON.stringify(userData));
@@ -50,11 +54,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
 
+    const isAdmin = email === 'swi79@bk.ru';
     const newUser = {
       id: Date.now().toString(),
       email,
       password,
-      name
+      name,
+      isAdmin
     };
 
     users.push(newUser);
@@ -63,7 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userData = {
       id: newUser.id,
       email: newUser.email,
-      name: newUser.name
+      name: newUser.name,
+      isAdmin
     };
     setUser(userData);
     localStorage.setItem('bookstore_user', JSON.stringify(userData));
@@ -76,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user, isAdmin: user?.isAdmin || false }}>
       {children}
     </AuthContext.Provider>
   );
