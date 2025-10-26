@@ -39,6 +39,7 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
   const [selectedFormats, setSelectedFormats] = useState<Set<string>>(new Set());
   const [bookFiles, setBookFiles] = useState<Map<string, File>>(new Map());
   const [loading, setLoading] = useState(false);
+  const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
 
   const { addBook } = useBooks();
   const { toast } = useToast();
@@ -54,6 +55,7 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
     setDescription('');
     setSelectedFormats(new Set());
     setBookFiles(new Map());
+    setSelectedBadges([]);
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,6 +147,7 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
         cover: coverUrl,
         description,
         formats,
+        badges: selectedBadges,
       });
 
       toast({
@@ -233,6 +236,33 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
               onChange={(e) => setRating(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Метки (необязательно)</Label>
+            <div className="flex flex-wrap gap-2">
+              {['Новинка', 'Популярное', 'Бестселлер', 'Скидка'].map((badge) => (
+                <div key={badge} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={badge}
+                    checked={selectedBadges.includes(badge)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedBadges([...selectedBadges, badge]);
+                      } else {
+                        setSelectedBadges(selectedBadges.filter(b => b !== badge));
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor={badge}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {badge}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">

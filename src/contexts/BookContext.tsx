@@ -15,6 +15,7 @@ export interface Book {
   cover: string;
   description: string;
   formats: BookFormat[];
+  badges?: string[];
 }
 
 interface BookContextType {

@@ -37,6 +37,26 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
           className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-300" />
+        
+        {book.badges && book.badges.length > 0 && (
+          <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1">
+            {book.badges.map((badge) => (
+              <Badge 
+                key={badge} 
+                className={
+                  badge === 'Новинка' ? 'bg-blue-500 hover:bg-blue-600 text-white' :
+                  badge === 'Популярное' ? 'bg-purple-500 hover:bg-purple-600 text-white' :
+                  badge === 'Бестселлер' ? 'bg-amber-500 hover:bg-amber-600 text-white' :
+                  badge === 'Скидка' ? 'bg-red-500 hover:bg-red-600 text-white' :
+                  ''
+                }
+              >
+                {badge}
+              </Badge>
+            ))}
+          </div>
+        )}
+        
         <div className="absolute top-2 right-2 md:top-3 md:right-3 flex gap-1 md:gap-2">
           {isAdmin && onDelete && (
             <Button
