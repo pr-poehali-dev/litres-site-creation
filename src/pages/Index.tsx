@@ -9,7 +9,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
 import { AuthDialog } from '@/components/AuthDialog';
+import { CartDrawer } from '@/components/CartDrawer';
+import { useToast } from '@/hooks/use-toast';
 
 const mockBooks: Array<{
   id: number;
@@ -30,7 +33,25 @@ const Index = () => {
   const [selectedGenre, setSelectedGenre] = useState('Все жанры');
   const [favorites, setFavorites] = useState<number[]>([]);
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
+  const { addToCart, itemCount } = useCart();
+  const { toast } = useToast();
+
+  const handleAddToCart = (book: typeof mockBooks[0]) => {
+    addToCart({
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      price: book.price,
+      cover: book.cover,
+      genre: book.genre,
+    });
+    toast({
+      title: 'Добавлено в корзину',
+      description: `${book.title} добавлена в корзину`,
+    });
+  };
 
   const filteredBooks = mockBooks.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -79,6 +100,19 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon">
                 <Icon name="Heart" size={20} />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative"
+                onClick={() => setCartOpen(true)}
+              >
+                <Icon name="ShoppingCart" size={20} />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {itemCount}
+                  </span>
+                )}
               </Button>
               {isAuthenticated ? (
                 <DropdownMenu>
@@ -211,7 +245,7 @@ const Index = () => {
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-xl font-bold text-primary">{book.price} ₽</span>
-                      <Button size="sm">
+                      <Button size="sm" onClick={() => handleAddToCart(book)}>
                         <Icon name="ShoppingCart" size={16} className="mr-2" />
                         Купить
                       </Button>
@@ -253,7 +287,7 @@ const Index = () => {
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-xl font-bold text-primary">{book.price} ₽</span>
-                      <Button size="sm">
+                      <Button size="sm" onClick={() => handleAddToCart(book)}>
                         <Icon name="ShoppingCart" size={16} className="mr-2" />
                         Купить
                       </Button>
@@ -309,7 +343,7 @@ const Index = () => {
                       </div>
                       <div className="flex items-center justify-between pt-2">
                         <span className="text-xl font-bold text-primary">{book.price} ₽</span>
-                        <Button size="sm">
+                        <Button size="sm" onClick={() => handleAddToCart(book)}>
                           <Icon name="ShoppingCart" size={16} className="mr-2" />
                           Купить
                         </Button>
@@ -372,6 +406,11 @@ const Index = () => {
       </footer>
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+      <CartDrawer 
+        open={cartOpen} 
+        onOpenChange={setCartOpen}
+        onAuthRequired={() => setAuthDialogOpen(true)}
+      />
     </div>
   );
 };
