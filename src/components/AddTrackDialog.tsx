@@ -25,6 +25,28 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
     year: new Date().getFullYear()
   });
 
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, cover: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, audioUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -123,27 +145,30 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cover">URL обложки</Label>
+              <Label htmlFor="cover">Обложка</Label>
               <Input
                 id="cover"
-                value={formData.cover}
-                onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
-                placeholder="https://..."
+                type="file"
+                accept="image/*"
+                onChange={handleCoverChange}
               />
+              <p className="text-xs text-muted-foreground">
+                Выберите изображение для обложки
+              </p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="audioUrl">URL аудио файла *</Label>
+            <Label htmlFor="audioUrl">Аудио файл *</Label>
             <Input
               id="audioUrl"
-              value={formData.audioUrl}
-              onChange={(e) => setFormData({ ...formData, audioUrl: e.target.value })}
-              placeholder="https://.../audio.mp3"
+              type="file"
+              accept="audio/*"
+              onChange={handleAudioChange}
               required
             />
             <p className="text-xs text-muted-foreground">
-              Добавьте ссылку на MP3 файл (можно использовать облачные сервисы)
+              Выберите MP3 или другой аудио файл
             </p>
           </div>
 
