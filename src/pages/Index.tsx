@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,10 +28,38 @@ const Index = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [addBookOpen, setAddBookOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 12 });
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const { addToCart, itemCount } = useCart();
   const { books } = useBooks();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        let { hours, minutes, seconds } = prev;
+        
+        if (seconds > 0) {
+          seconds--;
+        } else if (minutes > 0) {
+          minutes--;
+          seconds = 59;
+        } else if (hours > 0) {
+          hours--;
+          minutes = 59;
+          seconds = 59;
+        } else {
+          hours = 23;
+          minutes = 59;
+          seconds = 59;
+        }
+        
+        return { hours, minutes, seconds };
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const handleAddToCart = (book: typeof books[0]) => {
     addToCart({
@@ -185,10 +213,22 @@ const Index = () => {
                   <Icon name="Sparkles" size={20} className="mr-2" />
                   Смотреть акции
                 </Button>
-                <Button size="lg" variant="ghost" className="text-white border-white/30 hover:bg-white/10">
-                  <Icon name="Clock" size={20} className="mr-2" />
-                  До конца: 23:45:12
-                </Button>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                  <Icon name="Clock" size={20} className="text-white" />
+                  <div className="flex items-center gap-1 text-white font-mono font-bold">
+                    <span className="bg-white/20 rounded px-2 py-1 min-w-[2.5rem] text-center">
+                      {String(timeLeft.hours).padStart(2, '0')}
+                    </span>
+                    <span className="animate-pulse">:</span>
+                    <span className="bg-white/20 rounded px-2 py-1 min-w-[2.5rem] text-center">
+                      {String(timeLeft.minutes).padStart(2, '0')}
+                    </span>
+                    <span className="animate-pulse">:</span>
+                    <span className="bg-white/20 rounded px-2 py-1 min-w-[2.5rem] text-center">
+                      {String(timeLeft.seconds).padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             
