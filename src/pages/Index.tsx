@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ const mockBooks: Array<{
 const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Бизнес'];
 
 const Index = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Все жанры');
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -91,11 +93,11 @@ const Index = () => {
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
                       <Icon name="User" size={16} className="mr-2" />
-                      Профиль
+                      Личный кабинет
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
                       <Icon name="ShoppingBag" size={16} className="mr-2" />
                       Мои заказы
                     </DropdownMenuItem>
