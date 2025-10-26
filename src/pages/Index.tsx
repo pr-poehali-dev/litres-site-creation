@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Icon from '@/components/ui/icon';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthDialog } from '@/components/AuthDialog';
 
 const mockBooks: Array<{
   id: number;
@@ -24,6 +27,8 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Все жанры');
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const { user, logout, isAuthenticated } = useAuth();
 
   const filteredBooks = mockBooks.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -73,9 +78,43 @@ const Index = () => {
               <Button variant="ghost" size="icon">
                 <Icon name="Heart" size={20} />
               </Button>
-              <Button variant="ghost" size="icon">
-                <Icon name="User" size={20} />
-              </Button>
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Icon name="User" size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-2 py-2">
+                      <p className="text-sm font-medium">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Icon name="User" size={16} className="mr-2" />
+                      Профиль
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Icon name="ShoppingBag" size={16} className="mr-2" />
+                      Мои заказы
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Icon name="Settings" size={16} className="mr-2" />
+                      Настройки
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="text-destructive">
+                      <Icon name="LogOut" size={16} className="mr-2" />
+                      Выйти
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="ghost" size="icon" onClick={() => setAuthDialogOpen(true)}>
+                  <Icon name="User" size={20} />
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -329,6 +368,8 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </div>
   );
 };
