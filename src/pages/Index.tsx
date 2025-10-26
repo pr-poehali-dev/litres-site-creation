@@ -7,68 +7,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Icon from '@/components/ui/icon';
 
-const mockBooks = [
-  {
-    id: 1,
-    title: 'Мастер и Маргарита',
-    author: 'Михаил Булгаков',
-    genre: 'Классика',
-    rating: 4.8,
-    price: 299,
-    cover: 'https://cdn.poehali.dev/projects/f1523a20-2ec4-4290-becf-0f259b3f9e36/files/6c6cbc3c-6cff-4ccb-8ccf-4bbbde62c1c7.jpg',
-    description: 'Культовый роман о добре и зле, любви и предательстве'
-  },
-  {
-    id: 2,
-    title: 'Война и мир',
-    author: 'Лев Толстой',
-    genre: 'Классика',
-    rating: 4.9,
-    price: 499,
-    cover: 'https://cdn.poehali.dev/projects/f1523a20-2ec4-4290-becf-0f259b3f9e36/files/18c15662-722a-4d22-a20c-bbcaec2e49ca.jpg',
-    description: 'Эпический роман о русском обществе в эпоху войн с Наполеоном'
-  },
-  {
-    id: 3,
-    title: 'Преступление и наказание',
-    author: 'Фёдор Достоевский',
-    genre: 'Классика',
-    rating: 4.7,
-    price: 349,
-    cover: '/placeholder.svg',
-    description: 'Психологический роман о моральных дилеммах и искуплении'
-  },
-  {
-    id: 4,
-    title: 'Анна Каренина',
-    author: 'Лев Толстой',
-    genre: 'Классика',
-    rating: 4.6,
-    price: 399,
-    cover: '/placeholder.svg',
-    description: 'История трагической любви на фоне высшего общества России'
-  },
-  {
-    id: 5,
-    title: 'Метро 2033',
-    author: 'Дмитрий Глуховский',
-    genre: 'Фантастика',
-    rating: 4.5,
-    price: 279,
-    cover: 'https://cdn.poehali.dev/projects/f1523a20-2ec4-4290-becf-0f259b3f9e36/files/bf137df1-e725-4114-a1c3-fc0211ec50fd.jpg',
-    description: 'Постапокалиптический роман о выживании в московском метро'
-  },
-  {
-    id: 6,
-    title: 'Пикник на обочине',
-    author: 'Аркадий и Борис Стругацкие',
-    genre: 'Фантастика',
-    rating: 4.7,
-    price: 259,
-    cover: '/placeholder.svg',
-    description: 'Философская фантастика о Зоне и сталкерах'
-  }
-];
+const mockBooks: Array<{
+  id: number;
+  title: string;
+  author: string;
+  genre: string;
+  rating: number;
+  price: number;
+  cover: string;
+  description: string;
+}> = [];
 
 const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Бизнес'];
 
