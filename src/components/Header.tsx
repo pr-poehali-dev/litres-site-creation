@@ -34,11 +34,11 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
               <Icon name="Home" size={18} className="mr-2" />
               Главная
             </Button>
-            <Button variant="ghost" className="text-sm font-medium">
+            <Button variant="ghost" className="text-sm font-medium" onClick={() => navigate('/new-releases')}>
               <Icon name="Sparkles" size={18} className="mr-2" />
               Новинки
             </Button>
-            <Button variant="ghost" className="text-sm font-medium">
+            <Button variant="ghost" className="text-sm font-medium" onClick={() => navigate('/catalog')}>
               <Icon name="Library" size={18} className="mr-2" />
               Каталог
             </Button>

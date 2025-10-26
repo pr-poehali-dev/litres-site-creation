@@ -12,6 +12,8 @@ import { MusicProvider } from "@/contexts/MusicContext";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import Music from "./pages/Music";
+import NewReleases from "./pages/NewReleases";
+import Catalog from "./pages/Catalog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/music" element={<Music />} />
+                    <Route path="/new-releases" element={<NewReleases />} />
+                    <Route path="/catalog" element={<Catalog />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
