@@ -24,9 +24,9 @@ const Index = () => {
   const [addBookOpen, setAddBookOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 12 });
   const { addToCart } = useCart();
-  const { books } = useBooks();
+  const { books, deleteBook } = useBooks();
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -105,6 +105,14 @@ const Index = () => {
     );
   };
 
+  const handleDeleteBook = (bookId: number) => {
+    deleteBook(bookId);
+    toast({
+      title: 'Книга удалена',
+      description: 'Книга успешно удалена из каталога',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header
@@ -150,6 +158,8 @@ const Index = () => {
                   isFavorite={favorites.includes(book.id)}
                   onToggleFavorite={toggleFavorite}
                   onAddToCart={handleAddToCart}
+                  onDelete={handleDeleteBook}
+                  isAdmin={isAdmin}
                 />
               ))}
             </div>
@@ -168,6 +178,8 @@ const Index = () => {
                     isFavorite={favorites.includes(book.id)}
                     onToggleFavorite={toggleFavorite}
                     onAddToCart={handleAddToCart}
+                    onDelete={handleDeleteBook}
+                    isAdmin={isAdmin}
                   />
                 ))}
             </div>
@@ -185,6 +197,8 @@ const Index = () => {
                     isFavorite={true}
                     onToggleFavorite={toggleFavorite}
                     onAddToCart={handleAddToCart}
+                    onDelete={handleDeleteBook}
+                    isAdmin={isAdmin}
                   />
                 ))}
             </div>

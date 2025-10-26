@@ -20,9 +20,11 @@ interface BookCardProps {
   isFavorite: boolean;
   onToggleFavorite: (bookId: number) => void;
   onAddToCart: (book: Book) => void;
+  onDelete?: (bookId: number) => void;
+  isAdmin?: boolean;
 }
 
-export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCart }: BookCardProps) => {
+export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCart, onDelete, isAdmin }: BookCardProps) => {
   return (
     <Card
       className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in"
@@ -35,14 +37,26 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
           className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-300" />
-        <Button
-          size="icon"
-          variant={isFavorite ? "default" : "secondary"}
-          className="absolute top-2 right-2 md:top-3 md:right-3 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity pulse-glow w-8 h-8 md:w-10 md:h-10"
-          onClick={() => onToggleFavorite(book.id)}
-        >
-          <Icon name="Heart" size={16} className="md:w-[18px] md:h-[18px]" fill={isFavorite ? "currentColor" : "none"} />
-        </Button>
+        <div className="absolute top-2 right-2 md:top-3 md:right-3 flex gap-1 md:gap-2">
+          {isAdmin && onDelete && (
+            <Button
+              size="icon"
+              variant="destructive"
+              className="opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity w-8 h-8 md:w-10 md:h-10"
+              onClick={() => onDelete(book.id)}
+            >
+              <Icon name="Trash2" size={16} className="md:w-[18px] md:h-[18px]" />
+            </Button>
+          )}
+          <Button
+            size="icon"
+            variant={isFavorite ? "default" : "secondary"}
+            className="opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity pulse-glow w-8 h-8 md:w-10 md:h-10"
+            onClick={() => onToggleFavorite(book.id)}
+          >
+            <Icon name="Heart" size={16} className="md:w-[18px] md:h-[18px]" fill={isFavorite ? "currentColor" : "none"} />
+          </Button>
+        </div>
       </div>
       <div className="p-3 md:p-4 space-y-2 md:space-y-3">
         <div>
