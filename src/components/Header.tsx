@@ -21,11 +21,11 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="relative">
-              <Icon name="BookOpen" className="text-primary" size={28} />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-ping" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-            </div>
+            <img 
+              src="https://cdn.poehali.dev/files/0bdd5dee-ce93-47b5-b390-9570bed156c2.png" 
+              alt="Pulse Book Logo" 
+              className="h-10 w-10 object-contain"
+            />
             <h1 className="text-xl md:text-2xl font-bold text-primary">Pulse Book</h1>
           </div>
           
