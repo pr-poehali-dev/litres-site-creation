@@ -69,7 +69,11 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Icon name="BookOpen" className="text-primary" size={32} />
+              <div className="relative">
+                <Icon name="BookOpen" className="text-primary" size={32} />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full" />
+              </div>
               <h1 className="text-2xl font-bold text-primary">Pulse Book</h1>
             </div>
             
@@ -213,19 +217,20 @@ const Index = () => {
               {filteredBooks.map((book, index) => (
                 <Card
                   key={book.id}
-                  className="group overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in"
+                  className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-muted shimmer-effect">
                     <img
                       src={book.cover}
                       alt={book.title}
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <Button
                       size="icon"
                       variant={favorites.includes(book.id) ? "default" : "secondary"}
-                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity pulse-glow"
                       onClick={() => toggleFavorite(book.id)}
                     >
                       <Icon name="Heart" size={18} fill={favorites.includes(book.id) ? "currentColor" : "none"} />
@@ -238,15 +243,15 @@ const Index = () => {
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">{book.description}</p>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 pulse-ring">
                         <Icon name="Star" size={16} className="text-yellow-500" fill="currentColor" />
                         <span className="text-sm font-medium">{book.rating}</span>
                       </div>
                       <Badge variant="secondary" className="text-xs">{book.genre}</Badge>
                     </div>
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-xl font-bold text-primary">{book.price} ₽</span>
-                      <Button size="sm" onClick={() => handleAddToCart(book)}>
+                      <span className="text-xl font-bold text-primary pulse-ring">{book.price} ₽</span>
+                      <Button size="sm" onClick={() => handleAddToCart(book)} className="pulse-glow">
                         <Icon name="ShoppingCart" size={16} className="mr-2" />
                         Купить
                       </Button>
