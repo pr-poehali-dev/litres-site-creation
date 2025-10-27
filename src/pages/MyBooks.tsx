@@ -13,17 +13,28 @@ const MyBooks = () => {
   const navigate = useNavigate();
   const { isAdmin, user } = useAuth();
   const { addToCart } = useCart();
-  const { books, toggleFavorite, isFavorite, deleteBook } = useBooks();
+  const { books, deleteBook } = useBooks();
   
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
+  const [favorites, setFavorites] = useState<number[]>([]);
 
   useEffect(() => {
     if (!isAdmin) {
       navigate('/');
     }
   }, [isAdmin, navigate]);
+
+  const toggleFavorite = (bookId: number) => {
+    setFavorites(prev => 
+      prev.includes(bookId) 
+        ? prev.filter(id => id !== bookId)
+        : [...prev, bookId]
+    );
+  };
+
+  const isFavorite = (bookId: number) => favorites.includes(bookId);
 
   return (
     <div className="min-h-screen bg-background">
