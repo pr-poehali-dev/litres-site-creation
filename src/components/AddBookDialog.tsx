@@ -40,6 +40,9 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
   const [bookFiles, setBookFiles] = useState<Map<string, File>>(new Map());
   const [loading, setLoading] = useState(false);
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
+  const [hasEbook, setHasEbook] = useState(false);
+  const [ebookText, setEbookText] = useState('');
+  const [ebookPrice, setEbookPrice] = useState('');
 
   const { addBook } = useBooks();
   const { toast } = useToast();
@@ -56,6 +59,9 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
     setSelectedFormats(new Set());
     setBookFiles(new Map());
     setSelectedBadges([]);
+    setHasEbook(false);
+    setEbookText('');
+    setEbookPrice('');
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,10 +103,30 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
     setLoading(true);
 
     try {
-      if (selectedFormats.size === 0) {
+      if (selectedFormats.size === 0 && !hasEbook) {
         toast({
           title: 'Ошибка',
-          description: 'Выберите хотя бы один формат книги',
+          description: 'Выберите хотя бы один формат книги или добавьте электронную книгу',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (hasEbook && !ebookText.trim()) {
+        toast({
+          title: 'Ошибка',
+          description: 'Введите текст электронной книги',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (hasEbook && !ebookPrice) {
+        toast({
+          title: 'Ошибка',
+          description: 'Укажите цену электронной книги',
           variant: 'destructive',
         });
         setLoading(false);
@@ -148,11 +174,13 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
         description,
         formats,
         badges: selectedBadges,
+        ebookText: hasEbook ? ebookText : undefined,
+        ebookPrice: hasEbook ? parseFloat(ebookPrice) : undefined,
       });
 
       toast({
         title: 'Книга добавлена!',
-        description: `${title} успешно добавлена в каталог с ${formats.length} форматами`,
+        description: `${title} успешно добавлена в каталог`,
       });
 
       resetForm();
@@ -294,7 +322,7 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
           </div>
 
           <div className="space-y-3">
-            <Label>Форматы книги *</Label>
+            <Label>Форматы книги для скачивания (необязательно)</Label>
             <div className="border rounded-lg p-4 space-y-3 max-h-[300px] overflow-y-auto">
               {availableFormats.map((format) => (
                 <div key={format.value} className="space-y-2">
@@ -331,6 +359,56 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-3 border-t pt-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasEbook"
+                checked={hasEbook}
+                onCheckedChange={(checked) => setHasEbook(checked as boolean)}
+              />
+              <label
+                htmlFor="hasEbook"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                Добавить электронную книгу для чтения на сайте
+              </label>
+            </div>
+
+            {hasEbook && (
+              <div className="space-y-3 ml-6">
+                <div className="space-y-2">
+                  <Label htmlFor="ebookPrice">Цена электронной книги (₽) *</Label>
+                  <Input
+                    id="ebookPrice"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="199"
+                    value={ebookPrice}
+                    onChange={(e) => setEbookPrice(e.target.value)}
+                    required={hasEbook}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ebookText">Полный текст книги *</Label>
+                  <Textarea
+                    id="ebookText"
+                    placeholder="Введите полный текст книги..."
+                    value={ebookText}
+                    onChange={(e) => setEbookText(e.target.value)}
+                    rows={10}
+                    className="font-mono text-sm"
+                    required={hasEbook}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Символов: {ebookText.length}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="gap-2">

@@ -190,11 +190,19 @@ const BookDetail = () => {
             )}
 
             <div className="border-t pt-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Цена</p>
-                  <p className="text-3xl font-bold text-primary">{book.price} ₽</p>
-                </div>
+              <div className="flex items-center gap-4 mb-6 flex-wrap">
+                {book.formats && book.formats.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Цена скачивания</p>
+                    <p className="text-3xl font-bold text-primary">{book.price} ₽</p>
+                  </div>
+                )}
+                {book.ebookText && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Цена электронной книги</p>
+                    <p className="text-3xl font-bold text-primary">{book.ebookPrice} ₽</p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 flex-wrap">
@@ -217,6 +225,29 @@ const BookDetail = () => {
                   >
                     <Icon name={isPurchased ? "Download" : "Lock"} size={20} className="mr-2" />
                     {isPurchased ? `Скачать (${selectedFormat.toUpperCase()})` : 'Купите, чтобы скачать'}
+                  </Button>
+                )}
+
+                {book.ebookText && (
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="flex-1 min-w-[200px]"
+                    onClick={() => {
+                      if (isPurchased) {
+                        navigate(`/read/${book.id}`);
+                      } else {
+                        toast({
+                          title: 'Книга не куплена',
+                          description: 'Купите электронную версию книги, чтобы её читать',
+                          variant: 'destructive',
+                        });
+                      }
+                    }}
+                    disabled={!isPurchased}
+                  >
+                    <Icon name={isPurchased ? "BookOpen" : "Lock"} size={20} className="mr-2" />
+                    {isPurchased ? 'Читать онлайн' : 'Купите, чтобы читать'}
                   </Button>
                 )}
               </div>

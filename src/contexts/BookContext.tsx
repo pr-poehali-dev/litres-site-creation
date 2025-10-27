@@ -16,6 +16,8 @@ export interface Book {
   description: string;
   formats: BookFormat[];
   badges?: string[];
+  ebookText?: string;
+  ebookPrice?: number;
 }
 
 interface BookContextType {
