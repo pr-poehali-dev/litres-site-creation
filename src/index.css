@@ -237,11 +237,32 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    -webkit-touch-callout: none;
+    pointer-events: auto;
+  }
+
+  .no-screenshot::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 9999;
+    pointer-events: none;
+    mix-blend-mode: screen;
   }
 
   @media print {
     .no-screenshot {
       display: none !important;
+    }
+  }
+
+  @supports (backdrop-filter: blur(0px)) {
+    .no-screenshot {
+      isolation: isolate;
     }
   }
 }

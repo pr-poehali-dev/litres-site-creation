@@ -83,14 +83,32 @@ const ReadBook = () => {
       e.preventDefault();
     };
 
+    const blurOnVisibilityChange = () => {
+      if (document.hidden) {
+        const bookContent = document.querySelector('.book-content');
+        if (bookContent) {
+          (bookContent as HTMLElement).style.filter = 'blur(20px)';
+        }
+      } else {
+        setTimeout(() => {
+          const bookContent = document.querySelector('.book-content');
+          if (bookContent) {
+            (bookContent as HTMLElement).style.filter = 'none';
+          }
+        }, 100);
+      }
+    };
+
     document.addEventListener('keyup', preventScreenshot);
     document.addEventListener('keydown', preventScreenshot);
     document.addEventListener('contextmenu', preventContextMenu);
+    document.addEventListener('visibilitychange', blurOnVisibilityChange);
 
     return () => {
       document.removeEventListener('keyup', preventScreenshot);
       document.removeEventListener('keydown', preventScreenshot);
       document.removeEventListener('contextmenu', preventContextMenu);
+      document.removeEventListener('visibilitychange', blurOnVisibilityChange);
     };
   }, [book, id, navigate, user, hasPurchased, toast]);
 
@@ -146,7 +164,7 @@ const ReadBook = () => {
           </div>
 
           <div 
-            className="prose prose-sm md:prose-base max-w-none leading-relaxed select-none touch-pan-y"
+            className="book-content prose prose-sm md:prose-base max-w-none leading-relaxed select-none touch-pan-y"
             style={{ 
               fontSize: `${fontSize}px`,
               userSelect: 'none',
@@ -154,7 +172,8 @@ const ReadBook = () => {
               MozUserSelect: 'none',
               msUserSelect: 'none',
               WebkitTouchCallout: 'none',
-              touchAction: 'pan-y'
+              touchAction: 'pan-y',
+              transition: 'filter 0.1s ease-in-out'
             }}
             onCopy={(e) => {
               e.preventDefault();
