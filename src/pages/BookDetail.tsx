@@ -25,6 +25,7 @@ const BookDetail = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [addBookOpen, setAddBookOpen] = useState(false);
+  const [editBookOpen, setEditBookOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<string>('');
   
   const book = books.find(b => b.id === Number(id));
@@ -111,14 +112,25 @@ const BookDetail = () => {
       />
 
       <main className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={() => navigate(-1)}
-        >
-          <Icon name="ChevronLeft" size={20} className="mr-2" />
-          Назад
-        </Button>
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+          >
+            <Icon name="ChevronLeft" size={20} className="mr-2" />
+            Назад
+          </Button>
+          
+          {isAuthenticated && user?.isAdmin && (
+            <Button
+              variant="outline"
+              onClick={() => setEditBookOpen(true)}
+            >
+              <Icon name="Edit" size={16} className="mr-2" />
+              Редактировать
+            </Button>
+          )}
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
@@ -259,6 +271,7 @@ const BookDetail = () => {
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
       <AddBookDialog open={addBookOpen} onOpenChange={setAddBookOpen} />
+      <AddBookDialog open={editBookOpen} onOpenChange={setEditBookOpen} bookToEdit={book} />
     </div>
   );
 };

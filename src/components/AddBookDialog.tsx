@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useBooks, BookFormat } from '@/contexts/BookContext';
+import { useBooks, BookFormat, Book } from '@/contexts/BookContext';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 interface AddBookDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  bookToEdit?: Book | null;
 }
 
 const availableFormats = [
@@ -27,7 +28,7 @@ const availableFormats = [
   { value: 'fb3', label: 'Fb3 - Развитие формата FB2' },
 ];
 
-export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
+export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogProps) => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [genre, setGenre] = useState('');
@@ -44,8 +45,27 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
   const [ebookText, setEbookText] = useState('');
   const [ebookPrice, setEbookPrice] = useState('');
 
-  const { addBook } = useBooks();
+  const { addBook, updateBook } = useBooks();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (bookToEdit) {
+      setTitle(bookToEdit.title);
+      setAuthor(bookToEdit.author);
+      setGenre(bookToEdit.genre);
+      setPrice(bookToEdit.price.toString());
+      setRating(bookToEdit.rating.toString());
+      setCoverPreview(bookToEdit.cover);
+      setDescription(bookToEdit.description);
+      setSelectedFormats(new Set(bookToEdit.formats.map(f => f.format)));
+      setSelectedBadges(bookToEdit.badges || []);
+      setHasEbook(!!bookToEdit.ebookText);
+      setEbookText(bookToEdit.ebookText || '');
+      setEbookPrice(bookToEdit.ebookPrice?.toString() || '');
+    } else {
+      resetForm();
+    }
+  }, [bookToEdit, open]);
 
   const resetForm = () => {
     setTitle('');
@@ -134,7 +154,8 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
       }
 
       for (const format of selectedFormats) {
-        if (!bookFiles.has(format)) {
+        const hasExistingFile = bookToEdit?.formats.some(f => f.format === format);
+        if (!bookFiles.has(format) && !hasExistingFile) {
           toast({
             title: 'Ошибка',
             description: `Загрузите файл для формата ${format.toUpperCase()}`,
@@ -145,7 +166,7 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
         }
       }
 
-      let coverUrl = '/placeholder.svg';
+      let coverUrl = bookToEdit?.cover || '/placeholder.svg';
       if (coverFile) {
         const reader = new FileReader();
         coverUrl = await new Promise((resolve) => {
@@ -154,17 +175,22 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
         });
       }
 
-      const formats: BookFormat[] = [];
+      const formats: BookFormat[] = bookToEdit?.formats || [];
       for (const [format, file] of bookFiles) {
         const reader = new FileReader();
         const fileUrl = await new Promise<string>((resolve) => {
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(file);
         });
-        formats.push({ format, fileUrl });
+        const existingIndex = formats.findIndex(f => f.format === format);
+        if (existingIndex >= 0) {
+          formats[existingIndex] = { format, fileUrl };
+        } else {
+          formats.push({ format, fileUrl });
+        }
       }
 
-      addBook({
+      const bookData = {
         title,
         author,
         genre,
@@ -176,12 +202,21 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
         badges: selectedBadges,
         ebookText: hasEbook ? ebookText : undefined,
         ebookPrice: hasEbook ? parseFloat(ebookPrice) : undefined,
-      });
+      };
 
-      toast({
-        title: 'Книга добавлена!',
-        description: `${title} успешно добавлена в каталог`,
-      });
+      if (bookToEdit) {
+        updateBook(bookToEdit.id, bookData);
+        toast({
+          title: 'Книга обновлена!',
+          description: `${title} успешно обновлена`,
+        });
+      } else {
+        addBook(bookData);
+        toast({
+          title: 'Книга добавлена!',
+          description: `${title} успешно добавлена в каталог`,
+        });
+      }
 
       resetForm();
       onOpenChange(false);
@@ -194,7 +229,9 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Добавить новую книгу</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">
+            {bookToEdit ? 'Редактировать книгу' : 'Добавить новую книгу'}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
