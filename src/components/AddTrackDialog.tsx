@@ -42,6 +42,15 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const maxSize = 512 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast({
+          title: "Ошибка",
+          description: "Размер файла не должен превышать 512 MB",
+          variant: "destructive"
+        });
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({ ...prev, audioUrl: reader.result as string }));
