@@ -70,6 +70,8 @@ const BookDetail = () => {
   };
 
   const isPurchased = user ? hasPurchased(user.email, book.id) : false;
+  const isDownloadFree = book.price === 0;
+  const isEbookFree = book.ebookPrice === 0;
 
   const handleDownload = () => {
     if (!isAuthenticated) {
@@ -82,7 +84,7 @@ const BookDetail = () => {
       return;
     }
 
-    if (!isPurchased) {
+    if (!isPurchased && !isDownloadFree) {
       toast({
         title: 'Книга не куплена',
         description: 'Сначала купите книгу, чтобы её скачать',
@@ -208,11 +210,13 @@ const BookDetail = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Цена скачивания</p>
-                    <p className="text-3xl font-bold text-primary">{book.price} ₽</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {isDownloadFree ? 'Бесплатно' : `${book.price} ₽`}
+                    </p>
                   </div>
                   
                   <div className="flex gap-3 flex-wrap">
-                    {book.price === 0 || isPurchased ? (
+                    {isDownloadFree || isPurchased ? (
                       <Button 
                         size="lg" 
                         variant="outline"
@@ -240,11 +244,13 @@ const BookDetail = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Цена электронной книги</p>
-                    <p className="text-3xl font-bold text-primary">{book.ebookPrice} ₽</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {isEbookFree ? 'Бесплатно' : `${book.ebookPrice} ₽`}
+                    </p>
                   </div>
                   
                   <div className="flex gap-3 flex-wrap">
-                    {book.ebookPrice === 0 || isPurchased ? (
+                    {isEbookFree || isPurchased ? (
                       <Button 
                         size="lg" 
                         variant="outline"
