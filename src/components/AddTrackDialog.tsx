@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useMusic } from '@/contexts/MusicContext';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
@@ -23,7 +24,8 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
     audioUrl: '',
     genre: '',
     year: new Date().getFullYear(),
-    price: 0
+    price: 0,
+    isAdultContent: false
   });
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +84,8 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
       audioUrl: '',
       genre: '',
       year: new Date().getFullYear(),
-      price: 0
+      price: 0,
+      isAdultContent: false
     });
     
     onOpenChange(false);
@@ -167,6 +170,18 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
               <p className="text-xs text-muted-foreground">
                 Укажите 0 для бесплатного трека
               </p>
+            </div>
+
+            <div className="space-y-2 flex items-center gap-2 pt-6">
+              <Checkbox 
+                id="isAdultContent"
+                checked={formData.isAdultContent}
+                onCheckedChange={(checked) => setFormData({ ...formData, isAdultContent: checked as boolean })}
+              />
+              <Label htmlFor="isAdultContent" className="cursor-pointer flex items-center gap-2">
+                <Icon name="AlertTriangle" size={16} className="text-destructive" />
+                <span>Контент 18+</span>
+              </Label>
             </div>
 
             <div className="space-y-2">

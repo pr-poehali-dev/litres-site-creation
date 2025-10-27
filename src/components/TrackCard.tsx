@@ -5,6 +5,7 @@ import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMusic } from '@/contexts/MusicContext';
 import { CopyrightWarningDialog } from './CopyrightWarningDialog';
+import { AgeWarningDialog } from './AgeWarningDialog';
 import { useToast } from '@/hooks/use-toast';
 
 interface Track {
@@ -18,6 +19,7 @@ interface Track {
   year: number;
   price?: number;
   purchasedBy?: string[];
+  isAdultContent?: boolean;
 }
 
 interface TrackCardProps {
@@ -30,12 +32,22 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
   const { deleteTrack, currentTrack, setCurrentTrack, isPlaying, setIsPlaying } = useMusic();
   const { toast } = useToast();
   const [showWarning, setShowWarning] = useState(false);
+  const [showAgeWarning, setShowAgeWarning] = useState(false);
   const [purchasedTracks, setPurchasedTracks] = useState<number[]>(() => {
     const saved = localStorage.getItem('purchased_tracks');
     return saved ? JSON.parse(saved) : [];
   });
+  const [confirmedAdultTracks, setConfirmedAdultTracks] = useState<number[]>(() => {
+    const saved = localStorage.getItem('confirmed_adult_tracks');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const handlePlayPause = () => {
+    if (track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin) {
+      setShowAgeWarning(true);
+      return;
+    }
+
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
@@ -67,6 +79,19 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
     });
   };
 
+  const confirmAdultContent = () => {
+    const updatedConfirmed = [...confirmedAdultTracks, track.id];
+    setConfirmedAdultTracks(updatedConfirmed);
+    localStorage.setItem('confirmed_adult_tracks', JSON.stringify(updatedConfirmed));
+    
+    if (currentTrack?.id === track.id) {
+      setIsPlaying(!isPlaying);
+    } else {
+      setCurrentTrack(track);
+      setIsPlaying(true);
+    }
+  };
+
   const isPurchased = purchasedTracks.includes(track.id);
   const isFree = !track.price || track.price === 0;
   const canPlay = isFree || isPurchased || isAdmin;
@@ -79,6 +104,12 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
         open={showWarning}
         onOpenChange={setShowWarning}
         onAccept={completePurchase}
+        trackTitle={track.title}
+      />
+      <AgeWarningDialog 
+        open={showAgeWarning}
+        onOpenChange={setShowAgeWarning}
+        onAccept={confirmAdultContent}
         trackTitle={track.title}
       />
       <Card
@@ -139,7 +170,14 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base md:text-lg line-clamp-1 mb-0.5 md:mb-1">{track.title}</h3>
+          <h3 className="font-semibold text-base md:text-lg line-clamp-1 mb-0.5 md:mb-1 flex items-center gap-2">
+            {track.title}
+            {track.isAdultContent && (
+              <span className="text-xs bg-destructive text-destructive-foreground px-2 py-0.5 rounded font-normal flex-shrink-0">
+                18+
+              </span>
+            )}
+          </h3>
           <p className="text-xs md:text-sm text-muted-foreground mb-1 md:mb-2 line-clamp-1">{track.artist}</p>
           <div className="flex items-center gap-2 md:gap-3 text-xs text-muted-foreground flex-wrap">
             {track.genre && (
