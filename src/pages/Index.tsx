@@ -13,7 +13,7 @@ import { SearchSection } from '@/components/SearchSection';
 import { BookCard } from '@/components/BookCard';
 import { useToast } from '@/hooks/use-toast';
 
-const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Бизнес'];
+const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Сказка'];
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');

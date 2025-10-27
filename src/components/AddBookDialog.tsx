@@ -204,7 +204,7 @@ export const AddBookDialog = ({ open, onOpenChange }: AddBookDialogProps) => {
                   <SelectItem value="Фантастика">Фантастика</SelectItem>
                   <SelectItem value="Детектив">Детектив</SelectItem>
                   <SelectItem value="Романтика">Романтика</SelectItem>
-                  <SelectItem value="Бизнес">Бизнес</SelectItem>
+                  <SelectItem value="Сказка">Сказка</SelectItem>
                 </SelectContent>
               </Select>
             </div>
