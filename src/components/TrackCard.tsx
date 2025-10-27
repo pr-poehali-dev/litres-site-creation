@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMusic } from '@/contexts/MusicContext';
+import { CopyrightWarningDialog } from './CopyrightWarningDialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface Track {
   id: number;
@@ -13,6 +16,8 @@ interface Track {
   audioUrl: string;
   genre: string;
   year: number;
+  price?: number;
+  purchasedBy?: string[];
 }
 
 interface TrackCardProps {
@@ -21,8 +26,14 @@ interface TrackCardProps {
 }
 
 export const TrackCard = ({ track, index }: TrackCardProps) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const { deleteTrack, currentTrack, setCurrentTrack, isPlaying, setIsPlaying } = useMusic();
+  const { toast } = useToast();
+  const [showWarning, setShowWarning] = useState(false);
+  const [purchasedTracks, setPurchasedTracks] = useState<number[]>(() => {
+    const saved = localStorage.getItem('purchased_tracks');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const handlePlayPause = () => {
     if (currentTrack?.id === track.id) {
@@ -33,13 +44,47 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
     }
   };
 
+  const handlePurchase = () => {
+    if (!user) {
+      toast({
+        title: 'Ошибка',
+        description: 'Войдите в систему для покупки трека',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setShowWarning(true);
+  };
+
+  const completePurchase = () => {
+    const updatedPurchases = [...purchasedTracks, track.id];
+    setPurchasedTracks(updatedPurchases);
+    localStorage.setItem('purchased_tracks', JSON.stringify(updatedPurchases));
+    
+    toast({
+      title: 'Успешно!',
+      description: `Трек "${track.title}" куплен. Помните об авторских правах!`
+    });
+  };
+
+  const isPurchased = purchasedTracks.includes(track.id);
+  const isFree = !track.price || track.price === 0;
+  const canPlay = isFree || isPurchased || isAdmin;
+
   const isCurrentTrack = currentTrack?.id === track.id;
 
   return (
-    <Card
-      className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in"
-      style={{ animationDelay: `${index * 30}ms` }}
-    >
+    <>
+      <CopyrightWarningDialog 
+        open={showWarning}
+        onOpenChange={setShowWarning}
+        onAccept={completePurchase}
+        trackTitle={track.title}
+      />
+      <Card
+        className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in"
+        style={{ animationDelay: `${index * 30}ms` }}
+      >
       <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4">
         <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
           {track.cover ? (
@@ -57,19 +102,34 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
             <Icon name="Music" size={24} className="text-muted-foreground md:w-8 md:h-8" />
           </div>
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-            <Button
-              size="icon"
-              variant="secondary"
-              className="w-8 h-8 md:w-10 md:h-10 rounded-full pulse-glow"
-              onClick={handlePlayPause}
-            >
-              <Icon 
-                name={isCurrentTrack && isPlaying ? "Pause" : "Play"} 
-                size={16}
-                className="md:w-5 md:h-5"
-                fill="currentColor"
-              />
-            </Button>
+            {canPlay ? (
+              <Button
+                size="icon"
+                variant="secondary"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-full pulse-glow"
+                onClick={handlePlayPause}
+              >
+                <Icon 
+                  name={isCurrentTrack && isPlaying ? "Pause" : "Play"} 
+                  size={16}
+                  className="md:w-5 md:h-5"
+                  fill="currentColor"
+                />
+              </Button>
+            ) : (
+              <Button
+                size="icon"
+                variant="secondary"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-full"
+                onClick={handlePurchase}
+              >
+                <Icon 
+                  name="Lock" 
+                  size={16}
+                  className="md:w-5 md:h-5"
+                />
+              </Button>
+            )}
           </div>
           {isCurrentTrack && isPlaying && (
             <div className="absolute -bottom-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-primary rounded-full flex items-center justify-center animate-pulse">
@@ -104,6 +164,26 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          {!isFree && !isPurchased && !isAdmin && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-primary">{track.price} ₽</span>
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 md:h-10"
+                onClick={handlePurchase}
+              >
+                <Icon name="ShoppingCart" size={14} className="mr-1 md:mr-2 md:w-4 md:h-4" />
+                Купить
+              </Button>
+            </div>
+          )}
+          {isPurchased && !isAdmin && (
+            <span className="text-xs md:text-sm text-green-600 font-medium flex items-center gap-1">
+              <Icon name="Check" size={14} className="md:w-4 md:h-4" />
+              Куплено
+            </span>
+          )}
           {isAdmin && (
             <Button
               size="icon"
@@ -117,5 +197,6 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
         </div>
       </div>
     </Card>
+    </>
   );
 };

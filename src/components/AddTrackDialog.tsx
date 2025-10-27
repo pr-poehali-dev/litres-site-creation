@@ -22,7 +22,8 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
     cover: '',
     audioUrl: '',
     genre: '',
-    year: new Date().getFullYear()
+    year: new Date().getFullYear(),
+    price: 0
   });
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +81,8 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
       cover: '',
       audioUrl: '',
       genre: '',
-      year: new Date().getFullYear()
+      year: new Date().getFullYear(),
+      price: 0
     });
     
     onOpenChange(false);
@@ -149,6 +151,22 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                 placeholder="3:45"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="price">Цена (₽)</Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                step="1"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+              />
+              <p className="text-xs text-muted-foreground">
+                Укажите 0 для бесплатного трека
+              </p>
             </div>
 
             <div className="space-y-2">

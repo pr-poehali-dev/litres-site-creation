@@ -9,6 +9,8 @@ interface Track {
   audioUrl: string;
   genre: string;
   year: number;
+  price?: number;
+  purchasedBy?: string[];
 }
 
 interface MusicContextType {
