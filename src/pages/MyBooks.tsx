@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BookCard } from '@/components/BookCard';
@@ -19,10 +19,11 @@ const MyBooks = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
 
-  if (!isAdmin || user?.email !== 'swi79@bk.ru') {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate('/');
+    }
+  }, [isAdmin, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
