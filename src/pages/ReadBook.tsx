@@ -106,49 +106,55 @@ const ReadBook = () => {
         onAddBookOpen={() => setAddBookOpen(true)}
       />
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center justify-between mb-6">
+      <main className="container mx-auto px-4 py-4 md:py-8 max-w-4xl">
+        <div className="flex items-center justify-between mb-4 md:mb-6 gap-2">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => navigate(`/book/${id}`)}
+            className="md:size-default"
           >
-            <Icon name="ChevronLeft" size={20} className="mr-2" />
-            Назад к описанию
+            <Icon name="ChevronLeft" size={20} className="md:mr-2" />
+            <span className="hidden md:inline">Назад к описанию</span>
           </Button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <Button
               variant="outline"
               size="icon"
               onClick={() => setFontSize(prev => Math.max(12, prev - 2))}
+              className="h-9 w-9 md:h-10 md:w-10 touch-manipulation"
             >
               <Icon name="Minus" size={16} />
             </Button>
-            <span className="text-sm text-muted-foreground w-12 text-center">{fontSize}px</span>
+            <span className="text-xs md:text-sm text-muted-foreground w-10 md:w-12 text-center">{fontSize}px</span>
             <Button
               variant="outline"
               size="icon"
               onClick={() => setFontSize(prev => Math.min(24, prev + 2))}
+              className="h-9 w-9 md:h-10 md:w-10 touch-manipulation"
             >
               <Icon name="Plus" size={16} />
             </Button>
           </div>
         </div>
 
-        <div className="bg-card rounded-lg shadow-lg p-8 md:p-12">
-          <div className="mb-8 text-center border-b pb-6">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">{book.title}</h1>
-            <p className="text-xl text-muted-foreground">{book.author}</p>
+        <div className="bg-card rounded-lg shadow-lg p-4 md:p-8 lg:p-12">
+          <div className="mb-6 md:mb-8 text-center border-b pb-4 md:pb-6">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">{book.title}</h1>
+            <p className="text-lg md:text-xl text-muted-foreground">{book.author}</p>
           </div>
 
           <div 
-            className="prose prose-sm md:prose-base max-w-none leading-relaxed select-none"
+            className="prose prose-sm md:prose-base max-w-none leading-relaxed select-none touch-pan-y"
             style={{ 
               fontSize: `${fontSize}px`,
               userSelect: 'none',
               WebkitUserSelect: 'none',
               MozUserSelect: 'none',
-              msUserSelect: 'none'
+              msUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+              touchAction: 'pan-y'
             }}
             onCopy={(e) => {
               e.preventDefault();
@@ -174,10 +180,11 @@ const ReadBook = () => {
           </div>
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-6 md:mt-8 text-center">
           <Button
             variant="outline"
             onClick={() => navigate(`/book/${id}`)}
+            className="touch-manipulation"
           >
             <Icon name="Book" size={16} className="mr-2" />
             Вернуться к описанию книги
