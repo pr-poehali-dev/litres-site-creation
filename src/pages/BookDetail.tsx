@@ -203,9 +203,8 @@ const BookDetail = () => {
                   ))}
                   {book.ebookText && (
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
-                      disabled
                       className="cursor-default"
                     >
                       Электронная книга
