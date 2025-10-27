@@ -149,7 +149,7 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="catalog" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
               {filteredBooks.map((book, index) => (
                 <BookCard
                   key={book.id}
@@ -166,7 +166,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="new" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
               {filteredBooks
                 .sort((a, b) => b.id - a.id)
                 .slice(0, 8)
@@ -186,7 +186,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="favorites" className="mt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
               {filteredBooks
                 .filter(book => favorites.includes(book.id))
                 .map((book, index) => (
