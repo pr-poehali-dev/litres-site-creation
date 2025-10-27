@@ -1,0 +1,221 @@
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Header } from '@/components/Header';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { AuthDialog } from '@/components/AuthDialog';
+import { CartDrawer } from '@/components/CartDrawer';
+import { AddBookDialog } from '@/components/AddBookDialog';
+import { useBooks } from '@/contexts/BookContext';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import Icon from '@/components/ui/icon';
+
+const BookDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { books } = useBooks();
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [addBookOpen, setAddBookOpen] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState<string>('');
+  
+  const book = books.find(b => b.id === Number(id));
+
+  useEffect(() => {
+    if (!book) {
+      navigate('/');
+    } else if (book.formats && book.formats.length > 0) {
+      setSelectedFormat(book.formats[0].format);
+    }
+  }, [book, navigate]);
+
+  if (!book) {
+    return null;
+  }
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      setAuthDialogOpen(true);
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите в систему, чтобы добавить книгу в корзину',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    addToCart({
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      price: book.price,
+      cover: book.cover,
+      genre: book.genre,
+    });
+    toast({
+      title: 'Добавлено в корзину',
+      description: `${book.title} добавлена в корзину`,
+    });
+  };
+
+  const handleDownload = () => {
+    if (!isAuthenticated) {
+      setAuthDialogOpen(true);
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите в систему, чтобы скачать книгу',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const format = book.formats?.find(f => f.format === selectedFormat);
+    if (format) {
+      const link = document.createElement('a');
+      link.href = format.fileUrl;
+      link.download = `${book.title}.${selectedFormat}`;
+      link.click();
+      
+      toast({
+        title: 'Скачивание начато',
+        description: `${book.title} в формате ${selectedFormat.toUpperCase()}`,
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header
+        onAuthDialogOpen={() => setAuthDialogOpen(true)}
+        onCartOpen={() => setCartOpen(true)}
+        onAddBookOpen={() => setAddBookOpen(true)}
+      />
+
+      <main className="container mx-auto px-4 py-8">
+        <Button
+          variant="ghost"
+          className="mb-6"
+          onClick={() => navigate(-1)}
+        >
+          <Icon name="ChevronLeft" size={20} className="mr-2" />
+          Назад
+        </Button>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-xl">
+                <img
+                  src={book.cover}
+                  alt={book.title}
+                  className="object-cover w-full h-full"
+                />
+                {book.badges && book.badges.length > 0 && (
+                  <div className="absolute top-3 left-3 flex flex-col gap-2">
+                    {book.badges.map((badge) => (
+                      <Badge 
+                        key={badge} 
+                        className={
+                          badge === 'Новинка' ? 'bg-blue-500 hover:bg-blue-600 text-white' :
+                          badge === 'Популярное' ? 'bg-purple-500 hover:bg-purple-600 text-white' :
+                          badge === 'Бестселлер' ? 'bg-amber-500 hover:bg-amber-600 text-white' :
+                          badge === 'Скидка' ? 'bg-red-500 hover:bg-red-600 text-white' :
+                          ''
+                        }
+                      >
+                        {badge}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 space-y-6">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-3">{book.title}</h1>
+              <p className="text-xl text-muted-foreground mb-4">{book.author}</p>
+              
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Icon name="Star" size={20} className="text-yellow-500" fill="currentColor" />
+                  <span className="text-lg font-semibold">{book.rating}</span>
+                </div>
+                <Badge variant="secondary" className="text-sm px-3 py-1">{book.genre}</Badge>
+              </div>
+            </div>
+
+            <div className="prose prose-sm max-w-none">
+              <h3 className="text-lg font-semibold mb-2">Описание</h3>
+              <p className="text-muted-foreground leading-relaxed">{book.description}</p>
+            </div>
+
+            {book.formats && book.formats.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Доступные форматы</h3>
+                <div className="flex flex-wrap gap-2">
+                  {book.formats.map((format) => (
+                    <Button
+                      key={format.format}
+                      variant={selectedFormat === format.format ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedFormat(format.format)}
+                      className="uppercase"
+                    >
+                      {format.format}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Цена</p>
+                  <p className="text-3xl font-bold text-primary">{book.price} ₽</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 flex-wrap">
+                <Button 
+                  size="lg" 
+                  className="flex-1 min-w-[200px]"
+                  onClick={handleAddToCart}
+                >
+                  <Icon name="ShoppingCart" size={20} className="mr-2" />
+                  Добавить в корзину
+                </Button>
+                
+                {book.formats && book.formats.length > 0 && (
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="flex-1 min-w-[200px]"
+                    onClick={handleDownload}
+                  >
+                    <Icon name="Download" size={20} className="mr-2" />
+                    Скачать ({selectedFormat.toUpperCase()})
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+      <AddBookDialog open={addBookOpen} onOpenChange={setAddBookOpen} />
+    </div>
+  );
+};
+
+export default BookDetail;

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
+import { useNavigate } from 'react-router-dom';
 
 interface Book {
   id: number;
@@ -25,12 +26,17 @@ interface BookCardProps {
 }
 
 export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCart, onDelete, isAdmin }: BookCardProps) => {
+  const navigate = useNavigate();
+
   return (
     <Card
       className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in flex flex-col"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      <div className="relative aspect-[2/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 touch-manipulation rounded-t-lg">
+      <div 
+        className="relative aspect-[2/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 touch-manipulation rounded-t-lg cursor-pointer"
+        onClick={() => navigate(`/book/${book.id}`)}
+      >
         <img
           src={book.cover}
           alt={book.title}
@@ -62,7 +68,10 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
               size="icon"
               variant="destructive"
               className="opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity w-7 h-7 rounded-full"
-              onClick={() => onDelete(book.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(book.id);
+              }}
             >
               <Icon name="Trash2" size={14} />
             </Button>
@@ -71,7 +80,10 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
             size="icon"
             variant={isFavorite ? "default" : "secondary"}
             className="opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity w-7 h-7 rounded-full"
-            onClick={() => onToggleFavorite(book.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(book.id);
+            }}
           >
             <Icon name="Heart" size={14} fill={isFavorite ? "currentColor" : "none"} />
           </Button>
