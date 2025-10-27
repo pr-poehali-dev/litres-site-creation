@@ -154,7 +154,7 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
           </Button>
         </div>
       </div>
-    </Card>
+      </Card>
     </>
   );
 };
