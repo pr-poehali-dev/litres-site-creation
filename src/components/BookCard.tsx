@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
+import { AgeWarningDialog } from './AgeWarningDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Book {
   id: number;
@@ -13,6 +16,7 @@ interface Book {
   genre: string;
   description: string;
   rating: number;
+  isAdultContent?: boolean;
 }
 
 interface BookCardProps {
@@ -27,15 +31,51 @@ interface BookCardProps {
 
 export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCart, onDelete, isAdmin }: BookCardProps) => {
   const navigate = useNavigate();
+  const { isAdmin: authIsAdmin } = useAuth();
+  const [showAgeWarning, setShowAgeWarning] = useState(false);
+  const [confirmedAdultBooks, setConfirmedAdultBooks] = useState<number[]>(() => {
+    const saved = localStorage.getItem('confirmed_adult_books');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const confirmAdultContent = () => {
+    const updatedConfirmed = [...confirmedAdultBooks, book.id];
+    setConfirmedAdultBooks(updatedConfirmed);
+    localStorage.setItem('confirmed_adult_books', JSON.stringify(updatedConfirmed));
+  };
+
+  const handleCardClick = () => {
+    if (book.isAdultContent && !confirmedAdultBooks.includes(book.id) && !authIsAdmin) {
+      setShowAgeWarning(true);
+      return;
+    }
+    navigate(`/book/${book.id}`);
+  };
 
   return (
-    <Card
-      className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in flex flex-col"
-      style={{ animationDelay: `${index * 50}ms` }}
-    >
+    <>
+      <AgeWarningDialog 
+        open={showAgeWarning}
+        onOpenChange={setShowAgeWarning}
+        onAccept={confirmAdultContent}
+        trackTitle={book.title}
+      />
+      <Card
+        className={`group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in flex flex-col relative ${
+          book.isAdultContent && !confirmedAdultBooks.includes(book.id) && !authIsAdmin ? 'blur-sm' : ''
+        }`}
+        style={{ animationDelay: `${index * 50}ms` }}
+      >
+        {book.isAdultContent && !confirmedAdultBooks.includes(book.id) && !authIsAdmin && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-[2px] rounded-lg">
+            <div className="bg-destructive text-destructive-foreground px-6 py-3 rounded-lg font-bold text-2xl shadow-lg">
+              18+
+            </div>
+          </div>
+        )}
       <div 
         className="relative aspect-[2/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 touch-manipulation rounded-t-lg cursor-pointer"
-        onClick={() => navigate(`/book/${book.id}`)}
+        onClick={handleCardClick}
       >
         <img
           src={book.cover}
@@ -115,5 +155,6 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
         </div>
       </div>
     </Card>
+    </>
   );
 };

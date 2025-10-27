@@ -44,6 +44,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
   const [hasEbook, setHasEbook] = useState(false);
   const [ebookText, setEbookText] = useState('');
   const [ebookPrice, setEbookPrice] = useState('');
+  const [isAdultContent, setIsAdultContent] = useState(false);
 
   const { addBook, updateBook } = useBooks();
   const { toast } = useToast();
@@ -62,6 +63,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
       setHasEbook(!!bookToEdit.ebookText);
       setEbookText(bookToEdit.ebookText || '');
       setEbookPrice(bookToEdit.ebookPrice?.toString() || '');
+      setIsAdultContent(bookToEdit.isAdultContent || false);
     } else {
       resetForm();
     }
@@ -82,6 +84,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
     setHasEbook(false);
     setEbookText('');
     setEbookPrice('');
+    setIsAdultContent(false);
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -202,6 +205,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
         badges: selectedBadges,
         ebookText: hasEbook ? ebookText : undefined,
         ebookPrice: hasEbook ? parseFloat(ebookPrice) : undefined,
+        isAdultContent,
       };
 
       if (bookToEdit) {
@@ -446,6 +450,18 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="space-y-2 flex items-center gap-2 border-t pt-4">
+            <Checkbox 
+              id="isAdultContent"
+              checked={isAdultContent}
+              onCheckedChange={(checked) => setIsAdultContent(checked as boolean)}
+            />
+            <Label htmlFor="isAdultContent" className="cursor-pointer flex items-center gap-2">
+              <Icon name="AlertTriangle" size={16} className="text-destructive" />
+              <span>Контент 18+</span>
+            </Label>
           </div>
 
           <DialogFooter className="gap-2">

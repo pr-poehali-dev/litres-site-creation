@@ -18,6 +18,7 @@ export interface Book {
   badges?: string[];
   ebookText?: string;
   ebookPrice?: number;
+  isAdultContent?: boolean;
 }
 
 interface BookContextType {
