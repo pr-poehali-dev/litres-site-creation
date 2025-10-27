@@ -223,4 +223,25 @@
       left: 100%;
     }
   }
+
+  .no-copy {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .no-screenshot {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  @media print {
+    .no-screenshot {
+      display: none !important;
+    }
+  }
 }

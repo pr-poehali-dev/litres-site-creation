@@ -61,6 +61,35 @@ const ReadBook = () => {
       });
       navigate(`/book/${id}`);
     }
+
+    const preventScreenshot = (e: KeyboardEvent) => {
+      if (
+        (e.key === 'PrintScreen') ||
+        (e.ctrlKey && e.shiftKey && (e.key === 's' || e.key === 'S')) ||
+        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5'))
+      ) {
+        e.preventDefault();
+        toast({
+          title: 'Скриншоты запрещены',
+          description: 'Содержимое книги защищено от копирования',
+          variant: 'destructive',
+        });
+      }
+    };
+
+    const preventContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener('keyup', preventScreenshot);
+    document.addEventListener('keydown', preventScreenshot);
+    document.addEventListener('contextmenu', preventContextMenu);
+
+    return () => {
+      document.removeEventListener('keyup', preventScreenshot);
+      document.removeEventListener('keydown', preventScreenshot);
+      document.removeEventListener('contextmenu', preventContextMenu);
+    };
   }, [book, id, navigate, user, hasPurchased, toast]);
 
   if (!book || !book.ebookText) {
@@ -68,7 +97,7 @@ const ReadBook = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background no-screenshot">
       <Header
         onAuthDialogOpen={() => setAuthDialogOpen(true)}
         onCartOpen={() => setCartOpen(true)}
@@ -111,8 +140,25 @@ const ReadBook = () => {
           </div>
 
           <div 
-            className="prose prose-sm md:prose-base max-w-none leading-relaxed"
-            style={{ fontSize: `${fontSize}px` }}
+            className="prose prose-sm md:prose-base max-w-none leading-relaxed select-none"
+            style={{ 
+              fontSize: `${fontSize}px`,
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none'
+            }}
+            onCopy={(e) => {
+              e.preventDefault();
+              toast({
+                title: 'Копирование запрещено',
+                description: 'Содержимое книги защищено от копирования',
+                variant: 'destructive',
+              });
+            }}
+            onCut={(e) => e.preventDefault()}
+            onPaste={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
           >
             {book.ebookText.split('\n').map((paragraph, index) => (
               paragraph.trim() ? (
