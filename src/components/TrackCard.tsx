@@ -113,9 +113,18 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
         trackTitle={track.title}
       />
       <Card
-        className="group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in"
+        className={`group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in relative ${
+          track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin ? 'blur-sm' : ''
+        }`}
         style={{ animationDelay: `${index * 30}ms` }}
       >
+        {track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
+            <div className="bg-destructive text-destructive-foreground px-6 py-3 rounded-lg font-bold text-2xl shadow-lg">
+              18+
+            </div>
+          </div>
+        )}
       <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4">
         <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
           {track.cover ? (
