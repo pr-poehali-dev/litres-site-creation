@@ -186,11 +186,11 @@ const BookDetail = () => {
               <p className="text-muted-foreground leading-relaxed">{book.description}</p>
             </div>
 
-            {book.formats && book.formats.length > 0 && (
+            {(book.formats && book.formats.length > 0) || book.ebookText ? (
               <div>
                 <h3 className="text-lg font-semibold mb-3">Доступные форматы</h3>
                 <div className="flex flex-wrap gap-2">
-                  {book.formats.map((format) => (
+                  {book.formats?.map((format) => (
                     <Button
                       key={format.format}
                       variant={selectedFormat === format.format ? "default" : "outline"}
@@ -201,9 +201,19 @@ const BookDetail = () => {
                       {format.format}
                     </Button>
                   ))}
+                  {book.ebookText && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      className="cursor-default"
+                    >
+                      Электронная книга
+                    </Button>
+                  )}
                 </div>
               </div>
-            )}
+            ) : null}
 
             <div className="border-t pt-6 space-y-6">
               {book.formats && book.formats.length > 0 && (
