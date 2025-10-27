@@ -42,7 +42,7 @@ const BookDetail = () => {
     return null;
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (type: 'download' | 'ebook') => {
     if (!isAuthenticated) {
       setAuthDialogOpen(true);
       toast({
@@ -53,11 +53,13 @@ const BookDetail = () => {
       return;
     }
     
+    const price = type === 'download' ? book.price : book.ebookPrice;
+    
     addToCart({
       id: book.id,
       title: book.title,
       author: book.author,
-      price: book.price,
+      price: price,
       cover: book.cover,
       genre: book.genre,
     });
@@ -201,68 +203,70 @@ const BookDetail = () => {
               </div>
             )}
 
-            <div className="border-t pt-6">
-              <div className="flex items-center gap-4 mb-6 flex-wrap">
-                {book.formats && book.formats.length > 0 && (
+            <div className="border-t pt-6 space-y-6">
+              {book.formats && book.formats.length > 0 && (
+                <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Цена скачивания</p>
                     <p className="text-3xl font-bold text-primary">{book.price} ₽</p>
                   </div>
-                )}
-                {book.ebookText && (
+                  
+                  <div className="flex gap-3 flex-wrap">
+                    {book.price === 0 || isPurchased ? (
+                      <Button 
+                        size="lg" 
+                        variant="outline"
+                        className="flex-1 min-w-[200px]"
+                        onClick={handleDownload}
+                      >
+                        <Icon name="Download" size={20} className="mr-2" />
+                        Скачать ({selectedFormat.toUpperCase()})
+                      </Button>
+                    ) : (
+                      <Button 
+                        size="lg" 
+                        className="flex-1 min-w-[200px]"
+                        onClick={() => handleAddToCart('download')}
+                      >
+                        <Icon name="ShoppingCart" size={20} className="mr-2" />
+                        Купить
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {book.ebookText && (
+                <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Цена электронной книги</p>
                     <p className="text-3xl font-bold text-primary">{book.ebookPrice} ₽</p>
                   </div>
-                )}
-              </div>
-
-              <div className="flex gap-3 flex-wrap">
-                <Button 
-                  size="lg" 
-                  className="flex-1 min-w-[200px]"
-                  onClick={handleAddToCart}
-                >
-                  <Icon name="ShoppingCart" size={20} className="mr-2" />
-                  Добавить в корзину
-                </Button>
-                
-                {book.formats && book.formats.length > 0 && (
-                  <Button 
-                    size="lg" 
-                    variant="outline"
-                    className="flex-1 min-w-[200px]"
-                    onClick={handleDownload}
-                    disabled={!isPurchased}
-                  >
-                    <Icon name={isPurchased ? "Download" : "Lock"} size={20} className="mr-2" />
-                    {isPurchased ? `Скачать (${selectedFormat.toUpperCase()})` : 'Купите, чтобы скачать'}
-                  </Button>
-                )}
-
-                {book.ebookText && (
-                  <Button 
-                    size="lg" 
-                    variant="outline"
-                    className="flex-1 min-w-[200px]"
-                    onClick={() => {
-                      if (isPurchased) {
-                        navigate(`/read/${book.id}`);
-                      } else {
-                        toast({
-                          title: 'Книга не куплена',
-                          description: 'Купите электронную версию книги, чтобы её читать',
-                          variant: 'destructive',
-                        });
-                      }
-                    }}
-                    disabled={!isPurchased}
-                  >
-                    <Icon name={isPurchased ? "BookOpen" : "Lock"} size={20} className="mr-2" />
-                    {isPurchased ? 'Читать онлайн' : 'Купите, чтобы читать'}
-                  </Button>
-                )}
-              </div>
+                  
+                  <div className="flex gap-3 flex-wrap">
+                    {book.ebookPrice === 0 || isPurchased ? (
+                      <Button 
+                        size="lg" 
+                        variant="outline"
+                        className="flex-1 min-w-[200px]"
+                        onClick={() => navigate(`/read/${book.id}`)}
+                      >
+                        <Icon name="BookOpen" size={20} className="mr-2" />
+                        Читать онлайн
+                      </Button>
+                    ) : (
+                      <Button 
+                        size="lg" 
+                        className="flex-1 min-w-[200px]"
+                        onClick={() => handleAddToCart('ebook')}
+                      >
+                        <Icon name="ShoppingCart" size={20} className="mr-2" />
+                        Купить
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
