@@ -20,6 +20,7 @@ interface Purchase {
 interface PurchaseContextType {
   purchases: Purchase[];
   addPurchase: (userId: string, items: PurchaseItem[]) => void;
+  hasPurchased: (userId: string, bookId: number) => boolean;
 }
 
 const PurchaseContext = createContext<PurchaseContextType | undefined>(undefined);
@@ -51,10 +52,19 @@ export const PurchaseProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('bookstore_purchases', JSON.stringify(updatedPurchases));
   };
 
+  const hasPurchased = (userId: string, bookId: number): boolean => {
+    return purchases.some(
+      purchase => 
+        purchase.userId === userId && 
+        purchase.status === 'completed' &&
+        purchase.items.some(item => item.bookId === bookId)
+    );
+  };
+
   const userPurchases = purchases;
 
   return (
-    <PurchaseContext.Provider value={{ purchases: userPurchases, addPurchase }}>
+    <PurchaseContext.Provider value={{ purchases: userPurchases, addPurchase, hasPurchased }}>
       {children}
     </PurchaseContext.Provider>
   );

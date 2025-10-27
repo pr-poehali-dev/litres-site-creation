@@ -9,6 +9,7 @@ import { AddBookDialog } from '@/components/AddBookDialog';
 import { useBooks } from '@/contexts/BookContext';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePurchases } from '@/contexts/PurchaseContext';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
@@ -17,7 +18,8 @@ const BookDetail = () => {
   const navigate = useNavigate();
   const { books } = useBooks();
   const { addToCart } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { hasPurchased } = usePurchases();
   const { toast } = useToast();
   
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -64,12 +66,23 @@ const BookDetail = () => {
     });
   };
 
+  const isPurchased = user ? hasPurchased(user.email, book.id) : false;
+
   const handleDownload = () => {
     if (!isAuthenticated) {
       setAuthDialogOpen(true);
       toast({
         title: 'Требуется авторизация',
         description: 'Войдите в систему, чтобы скачать книгу',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isPurchased) {
+      toast({
+        title: 'Книга не куплена',
+        description: 'Сначала купите книгу, чтобы её скачать',
         variant: 'destructive',
       });
       return;
@@ -200,9 +213,10 @@ const BookDetail = () => {
                     variant="outline"
                     className="flex-1 min-w-[200px]"
                     onClick={handleDownload}
+                    disabled={!isPurchased}
                   >
-                    <Icon name="Download" size={20} className="mr-2" />
-                    Скачать ({selectedFormat.toUpperCase()})
+                    <Icon name={isPurchased ? "Download" : "Lock"} size={20} className="mr-2" />
+                    {isPurchased ? `Скачать (${selectedFormat.toUpperCase()})` : 'Купите, чтобы скачать'}
                   </Button>
                 )}
               </div>
