@@ -53,7 +53,9 @@ const ReadBook = () => {
     }
 
     const isPurchased = hasPurchased(user.email, book.id);
-    if (!isPurchased) {
+    const isEbookFree = book.ebookPrice === 0;
+    
+    if (!isPurchased && !isEbookFree) {
       toast({
         title: 'Книга не куплена',
         description: 'Купите электронную версию книги, чтобы её читать',
