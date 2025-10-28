@@ -5,6 +5,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { AddTrackDialog } from '@/components/AddTrackDialog';
 import { EditTrackDialog } from '@/components/EditTrackDialog';
+import { BulkEditTracksDialog } from '@/components/BulkEditTracksDialog';
 import { TrackCard } from '@/components/TrackCard';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { Button } from '@/components/ui/button';
@@ -32,13 +33,47 @@ const Music = () => {
   const [addBookOpen, setAddBookOpen] = useState(false);
   const [addTrackOpen, setAddTrackOpen] = useState(false);
   const [editTrackOpen, setEditTrackOpen] = useState(false);
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedTrackIds, setSelectedTrackIds] = useState<number[]>([]);
   const { isAdmin } = useAuth();
-  const { tracks } = useMusic();
+  const { tracks, deleteTrack } = useMusic();
 
   const handleEditTrack = (track: Track) => {
     setSelectedTrack(track);
     setEditTrackOpen(true);
+  };
+
+  const toggleTrackSelection = (trackId: number) => {
+    setSelectedTrackIds(prev => 
+      prev.includes(trackId) 
+        ? prev.filter(id => id !== trackId)
+        : [...prev, trackId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedTrackIds.length === tracks.length) {
+      setSelectedTrackIds([]);
+    } else {
+      setSelectedTrackIds(tracks.map(t => t.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (window.confirm(`Удалить ${selectedTrackIds.length} треков?`)) {
+      for (const trackId of selectedTrackIds) {
+        await deleteTrack(trackId);
+      }
+      setSelectedTrackIds([]);
+      setSelectionMode(false);
+    }
+  };
+
+  const handleCancelSelection = () => {
+    setSelectionMode(false);
+    setSelectedTrackIds([]);
   };
 
   return (
@@ -61,10 +96,37 @@ const Music = () => {
               </p>
             </div>
             {isAdmin && (
-              <Button onClick={() => setAddTrackOpen(true)} size="default" className="pulse-glow flex-shrink-0">
-                <Icon name="Plus" size={18} className="md:mr-2" />
-                <span className="hidden md:inline">Добавить трек</span>
-              </Button>
+              <div className="flex gap-2">
+                {!selectionMode ? (
+                  <>
+                    <Button onClick={() => setAddTrackOpen(true)} size="default" className="pulse-glow flex-shrink-0">
+                      <Icon name="Plus" size={18} className="md:mr-2" />
+                      <span className="hidden md:inline">Добавить трек</span>
+                    </Button>
+                    {tracks.length > 0 && (
+                      <Button 
+                        onClick={() => setSelectionMode(true)} 
+                        size="default" 
+                        variant="outline"
+                        className="flex-shrink-0"
+                      >
+                        <Icon name="CheckSquare" size={18} className="md:mr-2" />
+                        <span className="hidden md:inline">Выбрать</span>
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Button 
+                    onClick={handleCancelSelection} 
+                    size="default" 
+                    variant="outline"
+                    className="flex-shrink-0"
+                  >
+                    <Icon name="X" size={18} className="md:mr-2" />
+                    <span className="hidden md:inline">Отмена</span>
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -92,16 +154,57 @@ const Music = () => {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            {tracks.map((track, index) => (
-              <TrackCard 
-                key={track.id} 
-                track={track} 
-                index={index}
-                onEdit={isAdmin ? () => handleEditTrack(track) : undefined}
-              />
-            ))}
-          </div>
+          <>
+            {selectionMode && isAdmin && (
+              <div className="mb-4 p-4 bg-muted rounded-lg flex items-center justify-between animate-fade-in">
+                <div className="flex items-center gap-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSelectAll}
+                  >
+                    <Icon name="CheckSquare" size={16} className="mr-2" />
+                    {selectedTrackIds.length === tracks.length ? 'Снять всё' : 'Выбрать всё'}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Выбрано: {selectedTrackIds.length} из {tracks.length}
+                  </span>
+                </div>
+                {selectedTrackIds.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => setBulkEditOpen(true)}
+                    >
+                      <Icon name="Edit3" size={16} className="mr-2" />
+                      Редактировать
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={handleBulkDelete}
+                    >
+                      <Icon name="Trash2" size={16} className="mr-2" />
+                      Удалить
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="space-y-3">
+              {tracks.map((track, index) => (
+                <TrackCard 
+                  key={track.id} 
+                  track={track} 
+                  index={index}
+                  onEdit={isAdmin && !selectionMode ? () => handleEditTrack(track) : undefined}
+                  selectionMode={selectionMode}
+                  isSelected={selectedTrackIds.includes(track.id)}
+                  onToggleSelect={() => toggleTrackSelection(track.id)}
+                />
+              ))}
+            </div>
+          </>
         )}
       </main>
 
@@ -115,6 +218,15 @@ const Music = () => {
         open={editTrackOpen} 
         onOpenChange={setEditTrackOpen}
         track={selectedTrack}
+      />
+      <BulkEditTracksDialog
+        open={bulkEditOpen}
+        onOpenChange={setBulkEditOpen}
+        selectedTrackIds={selectedTrackIds}
+        onComplete={() => {
+          setSelectedTrackIds([]);
+          setSelectionMode(false);
+        }}
       />
       <MobileBottomNav />
     </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMusic } from '@/contexts/MusicContext';
@@ -26,9 +27,12 @@ interface TrackCardProps {
   track: Track;
   index: number;
   onEdit?: () => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-export const TrackCard = ({ track, index, onEdit }: TrackCardProps) => {
+export const TrackCard = ({ track, index, onEdit, selectionMode = false, isSelected = false, onToggleSelect }: TrackCardProps) => {
   const { isAdmin, user } = useAuth();
   const { deleteTrack, currentTrack, setCurrentTrack, isPlaying, setIsPlaying } = useMusic();
   const { toast } = useToast();
@@ -116,8 +120,11 @@ export const TrackCard = ({ track, index, onEdit }: TrackCardProps) => {
       <Card
         className={`group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in relative ${
           track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin ? 'blur-sm' : ''
+        } ${
+          selectionMode && isSelected ? 'ring-2 ring-primary' : ''
         }`}
         style={{ animationDelay: `${index * 30}ms` }}
+        onClick={selectionMode ? onToggleSelect : undefined}
       >
         {track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
@@ -127,6 +134,14 @@ export const TrackCard = ({ track, index, onEdit }: TrackCardProps) => {
           </div>
         )}
       <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4">
+        {selectionMode && (
+          <Checkbox 
+            checked={isSelected}
+            onCheckedChange={onToggleSelect}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-shrink-0"
+          />
+        )}
         <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
           {track.cover ? (
             <img
