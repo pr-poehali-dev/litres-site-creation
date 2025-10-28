@@ -178,6 +178,9 @@ const BookDetail = () => {
                   <span className="text-lg font-semibold">{book.rating}</span>
                 </div>
                 <Badge variant="secondary" className="text-sm px-3 py-1">{book.genre}</Badge>
+                {book.isAdultContent && (
+                  <Badge variant="destructive" className="text-sm px-3 py-1">18+</Badge>
+                )}
               </div>
             </div>
 
