@@ -24,10 +24,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         }
     
     db_url = os.environ.get('DATABASE_URL')
-    conn = psycopg2.connect(db_url)
-    cursor = conn.cursor()
     
     try:
+        conn = psycopg2.connect(db_url)
+        cursor = conn.cursor()
         if method == 'GET':
             cursor.execute(
                 "SELECT id, title, artist, duration, cover, audio_url, genre, year, price, is_adult_content "
@@ -119,6 +119,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'body': json.dumps({'error': 'Method not allowed'})
             }
     
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': str(e)})
+        }
+    
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
