@@ -62,20 +62,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'POST':
             body_data = json.loads(event.get('body', '{}'))
             
+            title = body_data['title'].replace("'", "''")
+            artist = body_data['artist'].replace("'", "''")
+            duration = body_data.get('duration', '').replace("'", "''")
+            cover = body_data.get('cover', '').replace("'", "''")
+            audio_url = body_data['audioUrl'].replace("'", "''")
+            genre = body_data.get('genre', '').replace("'", "''")
+            year = body_data.get('year', 2024)
+            price = body_data.get('price', 0)
+            is_adult = body_data.get('isAdultContent', False)
+            
             cursor.execute(
-                "INSERT INTO tracks (title, artist, duration, cover, audio_url, genre, year, price, is_adult_content) "
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
-                (
-                    body_data['title'],
-                    body_data['artist'],
-                    body_data.get('duration', ''),
-                    body_data.get('cover', ''),
-                    body_data['audioUrl'],
-                    body_data.get('genre', ''),
-                    body_data.get('year', 2024),
-                    body_data.get('price', 0),
-                    body_data.get('isAdultContent', False)
-                )
+                f"INSERT INTO tracks (title, artist, duration, cover, audio_url, genre, year, price, is_adult_content) "
+                f"VALUES ('{title}', '{artist}', '{duration}', '{cover}', '{audio_url}', '{genre}', {year}, {price}, {is_adult}) "
+                f"RETURNING id"
             )
             track_id = cursor.fetchone()[0]
             conn.commit()
@@ -100,7 +100,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Track ID is required'})
                 }
             
-            cursor.execute("DELETE FROM tracks WHERE id = %s", (int(track_id),))
+            cursor.execute(f"DELETE FROM tracks WHERE id = {int(track_id)}")
             conn.commit()
             
             return {
