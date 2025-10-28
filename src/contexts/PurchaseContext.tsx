@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import funcUrls from '../../backend/func2url.json';
 
 interface PurchaseItem {
   bookId: number;
@@ -19,7 +20,7 @@ interface Purchase {
 
 interface PurchaseContextType {
   purchases: Purchase[];
-  addPurchase: (userId: string, items: PurchaseItem[]) => void;
+  addPurchase: (userId: string, items: PurchaseItem[]) => Promise<void>;
   hasPurchased: (userId: string, bookId: number) => boolean;
 }
 
@@ -27,29 +28,66 @@ const PurchaseContext = createContext<PurchaseContextType | undefined>(undefined
 
 export const PurchaseProvider = ({ children }: { children: ReactNode }) => {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+
+  const fetchPurchases = async (userEmail: string) => {
+    if (!userEmail) return;
+    try {
+      const response = await fetch(funcUrls.purchases, {
+        headers: { 'X-User-Email': userEmail }
+      });
+      const data = await response.json();
+      
+      const formattedPurchases: Purchase[] = (data.purchases || []).map((p: any) => ({
+        id: p.id.toString(),
+        userId: userEmail,
+        date: p.purchasedAt,
+        items: [{
+          bookId: p.bookId,
+          title: p.book.title,
+          author: p.book.author,
+          price: p.price,
+          cover: p.book.cover
+        }],
+        totalAmount: p.price,
+        status: 'completed' as const
+      }));
+      
+      setPurchases(formattedPurchases);
+    } catch (error) {
+      console.error('Failed to fetch purchases:', error);
+    }
+  };
 
   useEffect(() => {
-    const savedPurchases = localStorage.getItem('bookstore_purchases');
-    if (savedPurchases) {
-      setPurchases(JSON.parse(savedPurchases));
+    const userStr = localStorage.getItem('bookstore_user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setCurrentUserEmail(user.email);
+      fetchPurchases(user.email);
     }
   }, []);
 
-  const addPurchase = (userId: string, items: PurchaseItem[]) => {
-    const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
-    
-    const newPurchase: Purchase = {
-      id: Date.now().toString() + '-' + Math.random().toString(36).substring(7),
-      userId,
-      date: new Date().toISOString(),
-      items,
-      totalAmount,
-      status: 'completed'
-    };
-
-    const updatedPurchases = [...purchases, newPurchase];
-    setPurchases(updatedPurchases);
-    localStorage.setItem('bookstore_purchases', JSON.stringify(updatedPurchases));
+  const addPurchase = async (userId: string, items: PurchaseItem[]) => {
+    try {
+      for (const item of items) {
+        await fetch(funcUrls.purchases, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Email': userId
+          },
+          body: JSON.stringify({
+            bookId: item.bookId,
+            purchaseType: 'download',
+            price: item.price
+          })
+        });
+      }
+      await fetchPurchases(userId);
+    } catch (error) {
+      console.error('Failed to add purchase:', error);
+    }
   };
 
   const hasPurchased = (userId: string, bookId: number): boolean => {

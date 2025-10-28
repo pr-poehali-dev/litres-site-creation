@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Get all books",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "books": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create book",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "title": "Test Book",
+        "author": "Test Author",
+        "genre": "Fiction",
+        "price": 299,
+        "rating": 4.5,
+        "description": "Test description",
+        "formats": []
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "id": "number",
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
