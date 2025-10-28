@@ -8,7 +8,16 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import Icon from '@/components/ui/icon';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import funcUrls from '../../backend/func2url.json';
+
+interface SalesData {
+  date?: string;
+  week?: string;
+  count: number;
+  revenue: number;
+}
 
 interface Stats {
   booksCount: number;
@@ -16,6 +25,8 @@ interface Stats {
   usersCount: number;
   purchasesCount: number;
   totalRevenue: number;
+  salesByDay?: SalesData[];
+  salesByWeek?: SalesData[];
 }
 
 const Dashboard = () => {
@@ -26,7 +37,9 @@ const Dashboard = () => {
     tracksCount: 0,
     usersCount: 0,
     purchasesCount: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    salesByDay: [],
+    salesByWeek: []
   });
   const [loading, setLoading] = useState(true);
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -56,7 +69,9 @@ const Dashboard = () => {
           tracksCount: musicData.tracksCount || 0,
           usersCount: authData.usersCount || 0,
           purchasesCount: booksData.purchasesCount || 0,
-          totalRevenue: booksData.totalRevenue || 0
+          totalRevenue: booksData.totalRevenue || 0,
+          salesByDay: booksData.salesByDay || [],
+          salesByWeek: booksData.salesByWeek || []
         });
       } catch (error) {
         console.error('Failed to fetch stats:', error);
@@ -217,6 +232,102 @@ const Dashboard = () => {
                   : '0'}
               </p>
             </div>
+          </Card>
+        </div>
+
+        <div className="mt-8">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
+              <Icon name="TrendingUp" size={20} className="text-primary" />
+              Динамика продаж
+            </h3>
+            
+            <Tabs defaultValue="days" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+                <TabsTrigger value="days">По дням (30 дней)</TabsTrigger>
+                <TabsTrigger value="weeks">По неделям (12 недель)</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="days" className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-medium mb-4 text-muted-foreground">Количество покупок</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={stats.salesByDay}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                      />
+                      <YAxis />
+                      <Tooltip 
+                        labelFormatter={(value) => new Date(value).toLocaleDateString('ru-RU')}
+                        formatter={(value: number) => [`${value} шт`, 'Покупок']}
+                      />
+                      <Bar dataKey="count" fill="hsl(var(--primary))" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium mb-4 text-muted-foreground">Выручка</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={stats.salesByDay}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date"
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                      />
+                      <YAxis />
+                      <Tooltip 
+                        labelFormatter={(value) => new Date(value).toLocaleDateString('ru-RU')}
+                        formatter={(value: number) => [`${value.toLocaleString('ru-RU')} ₽`, 'Выручка']}
+                      />
+                      <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="weeks" className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-medium mb-4 text-muted-foreground">Количество покупок</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={stats.salesByWeek}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="week"
+                        tickFormatter={(value) => `Нед. ${new Date(value).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}`}
+                      />
+                      <YAxis />
+                      <Tooltip 
+                        labelFormatter={(value) => `Неделя ${new Date(value).toLocaleDateString('ru-RU')}`}
+                        formatter={(value: number) => [`${value} шт`, 'Покупок']}
+                      />
+                      <Bar dataKey="count" fill="hsl(var(--primary))" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium mb-4 text-muted-foreground">Выручка</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={stats.salesByWeek}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="week"
+                        tickFormatter={(value) => `Нед. ${new Date(value).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}`}
+                      />
+                      <YAxis />
+                      <Tooltip 
+                        labelFormatter={(value) => `Неделя ${new Date(value).toLocaleDateString('ru-RU')}`}
+                        formatter={(value: number) => [`${value.toLocaleString('ru-RU')} ₽`, 'Выручка']}
+                      />
+                      <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+            </Tabs>
           </Card>
         </div>
       </main>

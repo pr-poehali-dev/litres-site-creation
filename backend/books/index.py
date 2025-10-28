@@ -45,13 +45,53 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cursor.execute('SELECT COALESCE(SUM(price), 0) FROM purchases')
                 total_revenue = float(cursor.fetchone()[0])
                 
+                cursor.execute('''
+                    SELECT 
+                        DATE(purchased_at) as date,
+                        COUNT(*) as count,
+                        COALESCE(SUM(price), 0) as revenue
+                    FROM purchases
+                    WHERE purchased_at >= CURRENT_DATE - INTERVAL '30 days'
+                    GROUP BY DATE(purchased_at)
+                    ORDER BY date ASC
+                ''')
+                
+                sales_by_day = []
+                for row in cursor.fetchall():
+                    sales_by_day.append({
+                        'date': row[0].isoformat(),
+                        'count': row[1],
+                        'revenue': float(row[2])
+                    })
+                
+                cursor.execute('''
+                    SELECT 
+                        DATE_TRUNC('week', purchased_at) as week,
+                        COUNT(*) as count,
+                        COALESCE(SUM(price), 0) as revenue
+                    FROM purchases
+                    WHERE purchased_at >= CURRENT_DATE - INTERVAL '12 weeks'
+                    GROUP BY week
+                    ORDER BY week ASC
+                ''')
+                
+                sales_by_week = []
+                for row in cursor.fetchall():
+                    sales_by_week.append({
+                        'week': row[0].isoformat(),
+                        'count': row[1],
+                        'revenue': float(row[2])
+                    })
+                
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({
                         'booksCount': books_count,
                         'purchasesCount': purchases_count,
-                        'totalRevenue': total_revenue
+                        'totalRevenue': total_revenue,
+                        'salesByDay': sales_by_day,
+                        'salesByWeek': sales_by_week
                     }),
                     'isBase64Encoded': False
                 }
