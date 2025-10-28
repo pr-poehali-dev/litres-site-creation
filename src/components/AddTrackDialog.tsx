@@ -59,7 +59,7 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title || !formData.artist || !formData.audioUrl) {
@@ -71,33 +71,30 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
       return;
     }
 
-    console.log('Submitting track:', {
-      title: formData.title,
-      artist: formData.artist,
-      hasCover: !!formData.cover,
-      hasAudio: !!formData.audioUrl
-    });
+    try {
+      await addTrack(formData);
+      
+      toast({
+        title: "Успешно!",
+        description: "Трек добавлен в библиотеку"
+      });
 
-    addTrack(formData);
-    
-    toast({
-      title: "Успешно!",
-      description: "Трек добавлен в библиотеку"
-    });
-
-    setFormData({
-      title: '',
-      artist: '',
-      duration: '',
-      cover: '',
-      audioUrl: '',
-      genre: '',
-      year: new Date().getFullYear(),
-      price: 0,
-      isAdultContent: false
-    });
-    
-    onOpenChange(false);
+      setFormData({
+        title: '',
+        artist: '',
+        duration: '',
+        cover: '',
+        audioUrl: '',
+        genre: '',
+        year: new Date().getFullYear(),
+        price: 0,
+        isAdultContent: false
+      });
+      
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error adding track:', error);
+    }
   };
 
   return (
