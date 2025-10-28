@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import funcUrls from '../../backend/func2url.json';
 
 interface Track {
   id: number;
@@ -27,8 +28,6 @@ interface MusicContextType {
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
 
-const API_URL = 'https://functions.poehali.dev/ec070e88-268a-4a1e-9669-8a24114d395e';
-
 export const MusicProvider = ({ children }: { children: ReactNode }) => {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
@@ -41,7 +40,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchTracks = async () => {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(funcUrls.music);
       const data = await response.json();
       setTracks(data.tracks || []);
       console.log('Loaded tracks from backend:', data.tracks?.length || 0);
@@ -55,7 +54,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
   const addTrack = async (track: Omit<Track, 'id'>) => {
     try {
       console.log('Sending track to backend:', track);
-      const response = await fetch(API_URL, {
+      const response = await fetch(funcUrls.music, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -81,7 +80,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
 
   const deleteTrack = async (trackId: number) => {
     try {
-      const response = await fetch(`${API_URL}?id=${trackId}`, {
+      const response = await fetch(`${funcUrls.music}?id=${trackId}`, {
         method: 'DELETE'
       });
       

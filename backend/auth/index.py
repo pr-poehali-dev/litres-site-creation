@@ -32,6 +32,31 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             email = params.get('email')
+            all_users = params.get('all')
+            
+            if all_users == 'true':
+                cursor.execute('''
+                    SELECT id, email, name, is_admin, created_at
+                    FROM users ORDER BY created_at DESC
+                ''')
+                
+                rows = cursor.fetchall()
+                users = []
+                for row in rows:
+                    users.append({
+                        'id': row[0],
+                        'email': row[1],
+                        'name': row[2],
+                        'isAdmin': row[3],
+                        'createdAt': row[4].isoformat()
+                    })
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'users': users}),
+                    'isBase64Encoded': False
+                }
             
             if not email:
                 return {

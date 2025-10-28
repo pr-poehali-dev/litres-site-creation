@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Get all tracks",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "tracks": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Add new track",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "title": "Test Track",
+        "artist": "Test Artist",
+        "duration": "3:45",
+        "audioUrl": "https://example.com/audio.mp3"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "id": "number",
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

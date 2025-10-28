@@ -100,6 +100,12 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
                       Мои книги
                     </DropdownMenuItem>
                   )}
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/users')}>
+                      <Icon name="Users" size={16} className="mr-2" />
+                      Пользователи
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <Icon name="ShoppingBag" size={16} className="mr-2" />
                     Мои заказы

@@ -33,7 +33,7 @@ export const PurchaseProvider = ({ children }: { children: ReactNode }) => {
   const fetchPurchases = async (userEmail: string) => {
     if (!userEmail) return;
     try {
-      const response = await fetch(funcUrls.purchases, {
+      const response = await fetch(`${funcUrls.books}/purchases`, {
         headers: { 'X-User-Email': userEmail }
       });
       const data = await response.json();
@@ -71,7 +71,7 @@ export const PurchaseProvider = ({ children }: { children: ReactNode }) => {
   const addPurchase = async (userId: string, items: PurchaseItem[]) => {
     try {
       for (const item of items) {
-        await fetch(funcUrls.purchases, {
+        await fetch(`${funcUrls.books}/purchases`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
