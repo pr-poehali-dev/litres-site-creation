@@ -11,6 +11,7 @@ import { Header } from '@/components/Header';
 import { BannerCarousel } from '@/components/BannerCarousel';
 import { SearchSection } from '@/components/SearchSection';
 import { BookCard } from '@/components/BookCard';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useToast } from '@/hooks/use-toast';
 
 const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Сказка'];
@@ -216,6 +217,7 @@ const Index = () => {
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
       <AddBookDialog open={addBookOpen} onOpenChange={setAddBookOpen} />
+      <MobileBottomNav />
     </div>
   );
 };

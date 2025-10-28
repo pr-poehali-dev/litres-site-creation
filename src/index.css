@@ -265,4 +265,14 @@
       isolation: isolate;
     }
   }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  @media (max-width: 768px) {
+    main {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important;
+    }
+  }
 }

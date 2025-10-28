@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { BookCard } from '@/components/BookCard';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { AuthDialog } from '@/components/AuthDialog';
 import { CartDrawer } from '@/components/CartDrawer';
 import { AddBookDialog } from '@/components/AddBookDialog';
@@ -76,6 +77,7 @@ const NewReleases = () => {
           onClose={() => setIsAddBookOpen(false)} 
         />
       )}
+      <MobileBottomNav />
     </div>
   );
 };

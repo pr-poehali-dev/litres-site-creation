@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMusic } from '@/contexts/MusicContext';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 
 const Music = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -84,6 +85,7 @@ const Music = () => {
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
       <AddBookDialog open={addBookOpen} onOpenChange={setAddBookOpen} />
       <AddTrackDialog open={addTrackOpen} onOpenChange={setAddTrackOpen} />
+      <MobileBottomNav />
     </div>
   );
 };
