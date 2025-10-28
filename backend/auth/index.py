@@ -33,6 +33,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             params = event.get('queryStringParameters') or {}
             email = params.get('email')
             all_users = params.get('all')
+            stats = params.get('stats')
+            
+            if stats == 'true':
+                cursor.execute('SELECT COUNT(*) FROM users')
+                users_count = cursor.fetchone()[0]
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'usersCount': users_count}),
+                    'isBase64Encoded': False
+                }
             
             if all_users == 'true':
                 cursor.execute('''

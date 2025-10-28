@@ -30,6 +30,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         if method == 'GET':
+            params = event.get('queryStringParameters') or {}
+            stats = params.get('stats')
+            
+            if stats == 'true':
+                cursor.execute('SELECT COUNT(*) FROM music_tracks')
+                tracks_count = cursor.fetchone()[0]
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'tracksCount': tracks_count}),
+                    'isBase64Encoded': False
+                }
+            
             cursor.execute('''
                 SELECT id, title, artist, duration, cover, audio_url, is_adult_content
                 FROM music_tracks ORDER BY created_at DESC

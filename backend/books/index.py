@@ -33,6 +33,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             book_id = params.get('id')
+            stats = params.get('stats')
+            
+            if stats == 'true':
+                cursor.execute('SELECT COUNT(*) FROM books')
+                books_count = cursor.fetchone()[0]
+                
+                cursor.execute('SELECT COUNT(*) FROM purchases')
+                purchases_count = cursor.fetchone()[0]
+                
+                cursor.execute('SELECT COALESCE(SUM(price), 0) FROM purchases')
+                total_revenue = float(cursor.fetchone()[0])
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'booksCount': books_count,
+                        'purchasesCount': purchases_count,
+                        'totalRevenue': total_revenue
+                    }),
+                    'isBase64Encoded': False
+                }
             
             if book_id:
                 cursor.execute('''

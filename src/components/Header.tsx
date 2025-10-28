@@ -95,6 +95,12 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
                     Личный кабинет
                   </DropdownMenuItem>
                   {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                      <Icon name="LayoutDashboard" size={16} className="mr-2" />
+                      Панель управления
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate('/my-books')}>
                       <Icon name="BookOpen" size={16} className="mr-2" />
                       Мои книги
