@@ -94,7 +94,7 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
 
   const isPurchased = purchasedTracks.includes(track.id);
   const isFree = !track.price || track.price === 0;
-  const canPlay = isFree || isPurchased || isAdmin;
+  const canPlay = true;
 
   const isCurrentTrack = currentTrack?.id === track.id;
 
