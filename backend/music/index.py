@@ -72,18 +72,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'POST':
             body_data = json.loads(event.get('body', '{}'))
             
-            cursor.execute('''
+            title = body_data['title'].replace("'", "''")
+            artist = body_data['artist'].replace("'", "''")
+            duration = body_data['duration'].replace("'", "''") if body_data.get('duration') else ''
+            cover = body_data.get('cover', '').replace("'", "''")
+            audio_url = body_data['audioUrl'].replace("'", "''")
+            is_adult = 'true' if body_data.get('isAdultContent', False) else 'false'
+            
+            cursor.execute(f'''
                 INSERT INTO music_tracks (title, artist, duration, cover, audio_url, is_adult_content)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                VALUES ('{title}', '{artist}', '{duration}', '{cover}', '{audio_url}', {is_adult})
                 RETURNING id
-            ''', (
-                body_data['title'],
-                body_data['artist'],
-                body_data['duration'],
-                body_data.get('cover', ''),
-                body_data['audioUrl'],
-                body_data.get('isAdultContent', False)
-            ))
+            ''')
             
             track_id = cursor.fetchone()[0]
             conn.commit()
@@ -107,7 +107,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute('DELETE FROM music_tracks WHERE id = %s', (track_id,))
+            cursor.execute(f'DELETE FROM music_tracks WHERE id = {int(track_id)}')
             conn.commit()
             
             return {

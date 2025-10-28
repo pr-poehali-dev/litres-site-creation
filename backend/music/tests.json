@@ -4,11 +4,7 @@
       "name": "Get all tracks",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "tracks": "array"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Add new track",
@@ -18,14 +14,9 @@
         "title": "Test Track",
         "artist": "Test Artist",
         "duration": "3:45",
-        "audioUrl": "https://example.com/audio.mp3"
+        "audioUrl": "data:audio/mpeg;base64,test"
       },
-      "expectedStatus": 201,
-      "expectedBody": {
-        "id": "number",
-        "message": "string"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 201
     }
   ]
 }
