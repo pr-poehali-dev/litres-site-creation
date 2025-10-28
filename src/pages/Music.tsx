@@ -6,6 +6,7 @@ import { AddBookDialog } from '@/components/AddBookDialog';
 import { AddTrackDialog } from '@/components/AddTrackDialog';
 import { EditTrackDialog } from '@/components/EditTrackDialog';
 import { BulkEditTracksDialog } from '@/components/BulkEditTracksDialog';
+import { ExportTracksDialog } from '@/components/ExportTracksDialog';
 import { TrackCard } from '@/components/TrackCard';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ const Music = () => {
   const [addTrackOpen, setAddTrackOpen] = useState(false);
   const [editTrackOpen, setEditTrackOpen] = useState(false);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedTrackIds, setSelectedTrackIds] = useState<number[]>([]);
@@ -104,15 +106,26 @@ const Music = () => {
                       <span className="hidden md:inline">Добавить трек</span>
                     </Button>
                     {tracks.length > 0 && (
-                      <Button 
-                        onClick={() => setSelectionMode(true)} 
-                        size="default" 
-                        variant="outline"
-                        className="flex-shrink-0"
-                      >
-                        <Icon name="CheckSquare" size={18} className="md:mr-2" />
-                        <span className="hidden md:inline">Выбрать</span>
-                      </Button>
+                      <>
+                        <Button 
+                          onClick={() => setSelectionMode(true)} 
+                          size="default" 
+                          variant="outline"
+                          className="flex-shrink-0"
+                        >
+                          <Icon name="CheckSquare" size={18} className="md:mr-2" />
+                          <span className="hidden md:inline">Выбрать</span>
+                        </Button>
+                        <Button 
+                          onClick={() => setExportOpen(true)} 
+                          size="default" 
+                          variant="outline"
+                          className="flex-shrink-0"
+                        >
+                          <Icon name="Download" size={18} className="md:mr-2" />
+                          <span className="hidden md:inline">Экспорт</span>
+                        </Button>
+                      </>
                     )}
                   </>
                 ) : (
@@ -174,6 +187,14 @@ const Music = () => {
                   <div className="flex gap-2">
                     <Button
                       size="sm"
+                      onClick={() => setExportOpen(true)}
+                      variant="outline"
+                    >
+                      <Icon name="Download" size={16} className="mr-2" />
+                      Экспорт
+                    </Button>
+                    <Button
+                      size="sm"
                       onClick={() => setBulkEditOpen(true)}
                     >
                       <Icon name="Edit3" size={16} className="mr-2" />
@@ -227,6 +248,12 @@ const Music = () => {
           setSelectedTrackIds([]);
           setSelectionMode(false);
         }}
+      />
+      <ExportTracksDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        tracks={tracks}
+        selectedTrackIds={selectionMode ? selectedTrackIds : undefined}
       />
       <MobileBottomNav />
     </div>
