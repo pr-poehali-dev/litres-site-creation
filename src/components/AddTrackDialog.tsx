@@ -94,6 +94,11 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
       onOpenChange(false);
     } catch (error) {
       console.error('Error adding track:', error);
+      toast({
+        title: "Ошибка",
+        description: error instanceof Error ? error.message : "Ошибка при сохранении трека. Попробуйте снова.",
+        variant: "destructive"
+      });
     }
   };
 

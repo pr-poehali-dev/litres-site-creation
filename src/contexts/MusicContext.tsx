@@ -54,6 +54,7 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
 
   const addTrack = async (track: Omit<Track, 'id'>) => {
     try {
+      console.log('Sending track to backend:', track);
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -62,15 +63,18 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify(track)
       });
       
+      console.log('Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+      
       if (!response.ok) {
-        throw new Error('Failed to add track');
+        throw new Error(`Failed to add track: ${responseData.error || response.statusText}`);
       }
       
       await fetchTracks();
       console.log('Track saved successfully to backend');
     } catch (error) {
       console.error('Failed to save track to backend:', error);
-      alert('Ошибка при сохранении трека. Попробуйте снова.');
       throw error;
     }
   };
