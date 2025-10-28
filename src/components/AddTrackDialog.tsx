@@ -42,18 +42,31 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const maxSize = 7 * 1024 * 1024;
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         toast({
           title: "Ошибка",
-          description: "Размер файла не должен превышать 7 MB",
+          description: "Размер файла не должен превышать 5 MB",
           variant: "destructive"
         });
         return;
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, audioUrl: reader.result as string }));
+        const result = reader.result as string;
+        const sizeInBytes = new Blob([result]).size;
+        const maxStorageSize = 4 * 1024 * 1024;
+        
+        if (sizeInBytes > maxStorageSize) {
+          toast({
+            title: "Ошибка",
+            description: "Файл слишком большой для сохранения. Попробуйте файл до 3 MB",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        setFormData(prev => ({ ...prev, audioUrl: result }));
       };
       reader.readAsDataURL(file);
     }
@@ -217,7 +230,7 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
               required
             />
             <p className="text-xs text-muted-foreground">
-              Выберите MP3 или другой аудио файл
+              Выберите MP3 или другой аудио файл (до 5 MB)
             </p>
           </div>
 
