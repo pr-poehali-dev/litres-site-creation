@@ -4,6 +4,7 @@ import { AuthDialog } from '@/components/AuthDialog';
 import { CartDrawer } from '@/components/CartDrawer';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { AddTrackDialog } from '@/components/AddTrackDialog';
+import { EditTrackDialog } from '@/components/EditTrackDialog';
 import { TrackCard } from '@/components/TrackCard';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { Button } from '@/components/ui/button';
@@ -12,13 +13,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useMusic } from '@/contexts/MusicContext';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 
+interface Track {
+  id: number;
+  title: string;
+  artist: string;
+  duration: string;
+  cover: string;
+  audioUrl: string;
+  genre?: string;
+  year?: number;
+  price?: number;
+  isAdultContent?: boolean;
+}
+
 const Music = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [addBookOpen, setAddBookOpen] = useState(false);
   const [addTrackOpen, setAddTrackOpen] = useState(false);
+  const [editTrackOpen, setEditTrackOpen] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const { isAdmin } = useAuth();
   const { tracks } = useMusic();
+
+  const handleEditTrack = (track: Track) => {
+    setSelectedTrack(track);
+    setEditTrackOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -73,7 +94,12 @@ const Music = () => {
         ) : (
           <div className="space-y-3">
             {tracks.map((track, index) => (
-              <TrackCard key={track.id} track={track} index={index} />
+              <TrackCard 
+                key={track.id} 
+                track={track} 
+                index={index}
+                onEdit={isAdmin ? () => handleEditTrack(track) : undefined}
+              />
             ))}
           </div>
         )}
@@ -85,6 +111,11 @@ const Music = () => {
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
       <AddBookDialog open={addBookOpen} onOpenChange={setAddBookOpen} />
       <AddTrackDialog open={addTrackOpen} onOpenChange={setAddTrackOpen} />
+      <EditTrackDialog 
+        open={editTrackOpen} 
+        onOpenChange={setEditTrackOpen}
+        track={selectedTrack}
+      />
       <MobileBottomNav />
     </div>
   );

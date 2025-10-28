@@ -25,9 +25,10 @@ interface Track {
 interface TrackCardProps {
   track: Track;
   index: number;
+  onEdit?: () => void;
 }
 
-export const TrackCard = ({ track, index }: TrackCardProps) => {
+export const TrackCard = ({ track, index, onEdit }: TrackCardProps) => {
   const { isAdmin, user } = useAuth();
   const { deleteTrack, currentTrack, setCurrentTrack, isPlaying, setIsPlaying } = useMusic();
   const { toast } = useToast();
@@ -232,14 +233,26 @@ export const TrackCard = ({ track, index }: TrackCardProps) => {
             </span>
           )}
           {isAdmin && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="text-destructive hover:text-destructive w-8 h-8 md:w-10 md:h-10"
-              onClick={() => deleteTrack(track.id)}
-            >
-              <Icon name="Trash2" size={16} className="md:w-[18px] md:h-[18px]" />
-            </Button>
+            <div className="flex gap-1">
+              {onEdit && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-primary hover:text-primary w-8 h-8 md:w-10 md:h-10"
+                  onClick={onEdit}
+                >
+                  <Icon name="Edit" size={16} className="md:w-[18px] md:h-[18px]" />
+                </Button>
+              )}
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-destructive hover:text-destructive w-8 h-8 md:w-10 md:h-10"
+                onClick={() => deleteTrack(track.id)}
+              >
+                <Icon name="Trash2" size={16} className="md:w-[18px] md:h-[18px]" />
+              </Button>
+            </div>
           )}
         </div>
       </div>

@@ -5,8 +5,8 @@ from typing import Dict, Any
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: API для управления музыкальными треками - получение, добавление, удаление
-    Args: event с httpMethod (GET/POST/DELETE), body для POST, queryStringParameters для DELETE
+    Business: API для управления музыкальными треками - получение, добавление, редактирование, удаление
+    Args: event с httpMethod (GET/POST/PUT/DELETE), body для POST/PUT, queryStringParameters для DELETE
     Returns: HTTP response с данными треков или статусом операции
     '''
     method: str = event.get('httpMethod', 'GET')
@@ -16,7 +16,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
@@ -92,6 +92,44 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'statusCode': 201,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({'id': track_id, 'message': 'Track created'}),
+                'isBase64Encoded': False
+            }
+        
+        elif method == 'PUT':
+            body_data = json.loads(event.get('body', '{}'))
+            track_id = body_data.get('id')
+            
+            if not track_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Track ID required'}),
+                    'isBase64Encoded': False
+                }
+            
+            title = body_data['title'].replace("'", "''")
+            artist = body_data['artist'].replace("'", "''")
+            duration = body_data['duration'].replace("'", "''") if body_data.get('duration') else ''
+            cover = body_data.get('cover', '').replace("'", "''")
+            audio_url = body_data['audioUrl'].replace("'", "''")
+            is_adult = 'true' if body_data.get('isAdultContent', False) else 'false'
+            
+            cursor.execute(f'''
+                UPDATE music_tracks 
+                SET title = '{title}', 
+                    artist = '{artist}', 
+                    duration = '{duration}', 
+                    cover = '{cover}', 
+                    audio_url = '{audio_url}', 
+                    is_adult_content = {is_adult}
+                WHERE id = {int(track_id)}
+            ''')
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'id': track_id, 'message': 'Track updated'}),
                 'isBase64Encoded': False
             }
         

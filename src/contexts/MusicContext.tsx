@@ -18,6 +18,7 @@ interface Track {
 interface MusicContextType {
   tracks: Track[];
   addTrack: (track: Omit<Track, 'id'>) => Promise<void>;
+  updateTrack: (trackId: number, track: Partial<Omit<Track, 'id'>>) => Promise<void>;
   deleteTrack: (trackId: number) => Promise<void>;
   currentTrack: Track | null;
   setCurrentTrack: (track: Track | null) => void;
@@ -78,6 +79,33 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateTrack = async (trackId: number, track: Partial<Omit<Track, 'id'>>) => {
+    try {
+      console.log('Updating track:', trackId, track);
+      const response = await fetch(funcUrls.music, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: trackId, ...track })
+      });
+      
+      console.log('Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to update track: ${responseData.error || response.statusText}`);
+      }
+      
+      await fetchTracks();
+      console.log('Track updated successfully in backend');
+    } catch (error) {
+      console.error('Failed to update track in backend:', error);
+      throw error;
+    }
+  };
+
   const deleteTrack = async (trackId: number) => {
     try {
       const response = await fetch(`${funcUrls.music}?id=${trackId}`, {
@@ -105,7 +133,8 @@ export const MusicProvider = ({ children }: { children: ReactNode }) => {
   return (
     <MusicContext.Provider value={{ 
       tracks, 
-      addTrack, 
+      addTrack,
+      updateTrack,
       deleteTrack,
       currentTrack,
       setCurrentTrack,
