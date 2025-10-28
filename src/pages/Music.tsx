@@ -7,6 +7,7 @@ import { AddTrackDialog } from '@/components/AddTrackDialog';
 import { EditTrackDialog } from '@/components/EditTrackDialog';
 import { BulkEditTracksDialog } from '@/components/BulkEditTracksDialog';
 import { ExportTracksDialog } from '@/components/ExportTracksDialog';
+import { ImportTracksDialog } from '@/components/ImportTracksDialog';
 import { TrackCard } from '@/components/TrackCard';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ const Music = () => {
   const [editTrackOpen, setEditTrackOpen] = useState(false);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedTrackIds, setSelectedTrackIds] = useState<number[]>([]);
@@ -104,6 +106,15 @@ const Music = () => {
                     <Button onClick={() => setAddTrackOpen(true)} size="default" className="pulse-glow flex-shrink-0">
                       <Icon name="Plus" size={18} className="md:mr-2" />
                       <span className="hidden md:inline">Добавить трек</span>
+                    </Button>
+                    <Button 
+                      onClick={() => setImportOpen(true)} 
+                      size="default" 
+                      variant="outline"
+                      className="flex-shrink-0"
+                    >
+                      <Icon name="Upload" size={18} className="md:mr-2" />
+                      <span className="hidden md:inline">Импорт</span>
                     </Button>
                     {tracks.length > 0 && (
                       <>
@@ -254,6 +265,10 @@ const Music = () => {
         onOpenChange={setExportOpen}
         tracks={tracks}
         selectedTrackIds={selectionMode ? selectedTrackIds : undefined}
+      />
+      <ImportTracksDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
       />
       <MobileBottomNav />
     </div>
