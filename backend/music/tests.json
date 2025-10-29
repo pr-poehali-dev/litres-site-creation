@@ -14,7 +14,10 @@
         "title": "Test Track",
         "artist": "Test Artist",
         "duration": "3:45",
-        "audioUrl": "data:audio/mpeg;base64,test"
+        "audioUrl": "data:audio/mpeg;base64,test",
+        "genre": "Rock",
+        "year": 2024,
+        "price": 0
       },
       "expectedStatus": 201
     }

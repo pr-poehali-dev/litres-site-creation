@@ -45,7 +45,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cursor.execute('''
-                SELECT id, title, artist, duration, cover, audio_url, is_adult_content
+                SELECT id, title, artist, duration, cover, audio_url, is_adult_content, genre, year, price
                 FROM music_tracks ORDER BY created_at DESC
             ''')
             
@@ -59,7 +59,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'duration': row[3],
                     'cover': row[4],
                     'audioUrl': row[5],
-                    'isAdultContent': row[6]
+                    'isAdultContent': row[6],
+                    'genre': row[7] or '',
+                    'year': row[8] or 0,
+                    'price': row[9] or 0
                 })
             
             return {
@@ -78,10 +81,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cover = body_data.get('cover', '').replace("'", "''")
             audio_url = body_data['audioUrl'].replace("'", "''")
             is_adult = 'true' if body_data.get('isAdultContent', False) else 'false'
+            genre = body_data.get('genre', '').replace("'", "''")
+            year = int(body_data.get('year', 0)) if body_data.get('year') else 'NULL'
+            price = int(body_data.get('price', 0)) if body_data.get('price') is not None else 0
             
             cursor.execute(f'''
-                INSERT INTO music_tracks (title, artist, duration, cover, audio_url, is_adult_content)
-                VALUES ('{title}', '{artist}', '{duration}', '{cover}', '{audio_url}', {is_adult})
+                INSERT INTO music_tracks (title, artist, duration, cover, audio_url, is_adult_content, genre, year, price)
+                VALUES ('{title}', '{artist}', '{duration}', '{cover}', '{audio_url}', {is_adult}, '{genre}', {year}, {price})
                 RETURNING id
             ''')
             
@@ -113,6 +119,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cover = body_data.get('cover', '').replace("'", "''")
             audio_url = body_data['audioUrl'].replace("'", "''")
             is_adult = 'true' if body_data.get('isAdultContent', False) else 'false'
+            genre = body_data.get('genre', '').replace("'", "''")
+            year = int(body_data.get('year', 0)) if body_data.get('year') else 'NULL'
+            price = int(body_data.get('price', 0)) if body_data.get('price') is not None else 0
             
             cursor.execute(f'''
                 UPDATE music_tracks 
@@ -121,7 +130,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     duration = '{duration}', 
                     cover = '{cover}', 
                     audio_url = '{audio_url}', 
-                    is_adult_content = {is_adult}
+                    is_adult_content = {is_adult},
+                    genre = '{genre}',
+                    year = {year},
+                    price = {price}
                 WHERE id = {int(track_id)}
             ''')
             conn.commit()
