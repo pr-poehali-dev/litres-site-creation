@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import { AgeWarningDialog } from './AgeWarningDialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBooks } from '@/contexts/BookContext';
 
 interface Book {
   id: number;
@@ -32,7 +33,10 @@ interface BookCardProps {
 export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCart, onDelete, isAdmin }: BookCardProps) => {
   const navigate = useNavigate();
   const { isAdmin: authIsAdmin } = useAuth();
+  const { rateBook, getUserRating } = useBooks();
   const [showAgeWarning, setShowAgeWarning] = useState(false);
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const userRating = getUserRating(book.id);
   const [confirmedAdultBooks, setConfirmedAdultBooks] = useState<number[]>(() => {
     const saved = localStorage.getItem('confirmed_adult_books');
     return saved ? JSON.parse(saved) : [];
@@ -143,8 +147,32 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
         
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            <Icon name="Star" size={12} className="text-yellow-500" fill="currentColor" />
-            <span className="text-xs font-medium">{book.rating}</span>
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    rateBook(book.id, star);
+                  }}
+                  onMouseEnter={() => setHoveredStar(star)}
+                  onMouseLeave={() => setHoveredStar(0)}
+                  className="transition-transform hover:scale-110"
+                >
+                  <Icon 
+                    name="Star" 
+                    size={12} 
+                    className={`${
+                      star <= (hoveredStar || userRating)
+                        ? 'text-yellow-500'
+                        : 'text-gray-300'
+                    }`}
+                    fill={star <= (hoveredStar || userRating) ? 'currentColor' : 'none'}
+                  />
+                </button>
+              ))}
+            </div>
+            <span className="text-xs font-medium text-muted-foreground ml-1">{book.rating}</span>
           </div>
           <Badge variant="secondary" className="text-xs px-2 py-0">{book.genre}</Badge>
         </div>
