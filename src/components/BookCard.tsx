@@ -83,24 +83,27 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
         />
         
-        {book.badges && book.badges.length > 0 && (
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {book.badges.map((badge) => (
-              <Badge 
-                key={badge} 
-                className={
-                  badge === 'Новинка' ? 'bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-0.5' :
-                  badge === 'Популярное' ? 'bg-purple-500 hover:bg-purple-600 text-white text-xs px-2 py-0.5' :
-                  badge === 'Бестселлер' ? 'bg-amber-500 hover:bg-amber-600 text-white text-xs px-2 py-0.5' :
-                  badge === 'Скидка' ? 'bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5' :
-                  'text-xs px-2 py-0.5'
-                }
-              >
-                {badge}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {book.isAdultContent && (
+            <Badge className="bg-destructive hover:bg-destructive text-destructive-foreground text-xs px-2 py-0.5 font-bold">
+              18+
+            </Badge>
+          )}
+          {book.badges && book.badges.length > 0 && book.badges.map((badge) => (
+            <Badge 
+              key={badge} 
+              className={
+                badge === 'Новинка' ? 'bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-0.5' :
+                badge === 'Популярное' ? 'bg-purple-500 hover:bg-purple-600 text-white text-xs px-2 py-0.5' :
+                badge === 'Бестселлер' ? 'bg-amber-500 hover:bg-amber-600 text-white text-xs px-2 py-0.5' :
+                badge === 'Скидка' ? 'bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5' :
+                'text-xs px-2 py-0.5'
+              }
+            >
+              {badge}
+            </Badge>
+          ))}
+        </div>
         
         <div className="absolute top-2 right-2 flex gap-1">
           {isAdmin && onDelete && (
