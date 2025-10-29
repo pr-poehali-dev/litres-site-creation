@@ -71,7 +71,7 @@ const BookDetail = () => {
 
   const isPurchased = user ? hasPurchased(user.email, book.id) : false;
   const isDownloadFree = book.price === 0;
-  const isEbookFree = book.ebookPrice === 0;
+  const isEbookFree = book.ebookPrice === 0 || book.ebookPrice === null;
 
   const handleDownload = () => {
     if (!isAuthenticated) {
