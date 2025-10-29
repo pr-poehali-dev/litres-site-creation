@@ -72,11 +72,11 @@ export const EditTrackDialog = ({ open, onOpenChange, track }: EditTrackDialogPr
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const maxSize = 3 * 1024 * 1024;
+      const maxSize = 2 * 1024 * 1024;
       if (file.size > maxSize) {
         toast({
           title: "Ошибка",
-          description: "Размер файла не должен превышать 3 MB",
+          description: "Размер файла не должен превышать 2 MB",
           variant: "destructive"
         });
         return;
@@ -236,7 +236,7 @@ export const EditTrackDialog = ({ open, onOpenChange, track }: EditTrackDialogPr
               onChange={handleAudioChange}
             />
             <p className="text-xs text-muted-foreground">
-              Выберите новый аудио файл или оставьте текущий (до 3 MB)
+              Выберите новый аудио файл или оставьте текущий (до 2 MB)
             </p>
           </div>
 

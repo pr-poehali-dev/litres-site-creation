@@ -42,11 +42,11 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const maxSize = 3 * 1024 * 1024;
+      const maxSize = 2 * 1024 * 1024;
       if (file.size > maxSize) {
         toast({
           title: "Ошибка",
-          description: "Размер файла не должен превышать 3 MB",
+          description: "Размер файла не должен превышать 2 MB",
           variant: "destructive"
         });
         return;
@@ -218,7 +218,7 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
               onChange={handleAudioChange}
             />
             <p className="text-xs text-muted-foreground">
-              Выберите MP3 или другой аудио файл (до 3 MB). Можно добавить позже.
+              Выберите MP3 или другой аудио файл (до 2 MB). Можно добавить позже.
             </p>
           </div>
 
