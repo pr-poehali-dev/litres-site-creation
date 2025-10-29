@@ -62,10 +62,10 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.artist || !formData.audioUrl) {
+    if (!formData.title || !formData.artist) {
       toast({
         title: "Ошибка",
-        description: "Заполните обязательные поля: название, исполнитель и аудио файл",
+        description: "Заполните обязательные поля: название и исполнитель",
         variant: "destructive"
       });
       return;
@@ -210,16 +210,15 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="audioUrl">Аудио файл *</Label>
+            <Label htmlFor="audioUrl">Аудио файл</Label>
             <Input
               id="audioUrl"
               type="file"
               accept="audio/*"
               onChange={handleAudioChange}
-              required
             />
             <p className="text-xs text-muted-foreground">
-              Выберите MP3 или другой аудио файл (до 3 MB)
+              Выберите MP3 или другой аудио файл (до 3 MB). Можно добавить позже.
             </p>
           </div>
 
