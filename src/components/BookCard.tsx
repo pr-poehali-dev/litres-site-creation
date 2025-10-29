@@ -68,7 +68,7 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
       >
         {book.isAdultContent && !confirmedAdultBooks.includes(book.id) && !authIsAdmin && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-[2px] rounded-lg pointer-events-none">
-            <div className="bg-destructive text-destructive-foreground px-6 py-3 rounded-lg font-bold text-2xl shadow-lg pointer-events-auto blur-none">
+            <div className="bg-destructive text-destructive-foreground px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold text-xl md:text-2xl shadow-lg pointer-events-auto blur-none">
               18+
             </div>
           </div>
