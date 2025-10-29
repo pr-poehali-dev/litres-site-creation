@@ -127,8 +127,8 @@ export const TrackCard = ({ track, index, onEdit, selectionMode = false, isSelec
         onClick={selectionMode ? onToggleSelect : undefined}
       >
         {track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
-            <div className="bg-destructive text-destructive-foreground px-6 py-3 rounded-lg font-bold text-2xl shadow-lg">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-[2px] pointer-events-none">
+            <div className="bg-destructive text-destructive-foreground px-6 py-3 rounded-lg font-bold text-2xl shadow-lg pointer-events-auto blur-none">
               18+
             </div>
           </div>
