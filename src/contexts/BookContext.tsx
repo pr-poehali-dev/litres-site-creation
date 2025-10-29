@@ -27,6 +27,8 @@ interface BookContextType {
   addBook: (book: Omit<Book, 'id'>) => void;
   updateBook: (id: number, book: Partial<Book>) => void;
   deleteBook: (id: number) => void;
+  toggleFavorite: (id: number) => void;
+  isFavorite: (id: number) => boolean;
 }
 
 const BookContext = createContext<BookContextType | undefined>(undefined);
@@ -34,6 +36,7 @@ const BookContext = createContext<BookContextType | undefined>(undefined);
 export const BookProvider = ({ children }: { children: ReactNode }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<number[]>([]);
 
   const fetchBooks = async () => {
     try {
@@ -90,8 +93,20 @@ export const BookProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const toggleFavorite = (id: number) => {
+    setFavorites(prev => 
+      prev.includes(id) 
+        ? prev.filter(fId => fId !== id) 
+        : [...prev, id]
+    );
+  };
+
+  const isFavorite = (id: number) => {
+    return favorites.includes(id);
+  };
+
   return (
-    <BookContext.Provider value={{ books, addBook, updateBook, deleteBook }}>
+    <BookContext.Provider value={{ books, addBook, updateBook, deleteBook, toggleFavorite, isFavorite }}>
       {children}
     </BookContext.Provider>
   );
