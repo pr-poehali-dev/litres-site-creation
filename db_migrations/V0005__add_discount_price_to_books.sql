@@ -1,0 +1,1 @@
+ALTER TABLE books ADD COLUMN discount_price NUMERIC(10,2);
