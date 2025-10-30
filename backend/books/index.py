@@ -99,7 +99,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if book_id:
                 cursor.execute('''
                     SELECT id, title, author, genre, rating, price, discount_price, cover, description, 
-                           badges, ebook_text, ebook_price, is_adult_content
+                           badges, ebook_text, ebook_price, ebook_discount_price, is_adult_content
                     FROM books WHERE id = %s
                 ''', (book_id,))
                 row = cursor.fetchone()
@@ -128,7 +128,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'badges': row[9] or [],
                     'ebookText': row[10],
                     'ebookPrice': float(row[11]) if row[11] else None,
-                    'isAdultContent': row[12],
+                    'ebookDiscountPrice': float(row[12]) if row[12] else None,
+                    'isAdultContent': row[13],
                     'formats': formats
                 }
                 
@@ -141,7 +142,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             else:
                 cursor.execute('''
                     SELECT id, title, author, genre, rating, price, discount_price, cover, description, 
-                           badges, ebook_text, ebook_price, is_adult_content
+                           badges, ebook_text, ebook_price, ebook_discount_price, is_adult_content
                     FROM books ORDER BY created_at DESC
                 ''')
                 rows = cursor.fetchall()
@@ -164,7 +165,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'badges': row[9] or [],
                         'ebookText': row[10],
                         'ebookPrice': float(row[11]) if row[11] else None,
-                        'isAdultContent': row[12],
+                        'ebookDiscountPrice': float(row[12]) if row[12] else None,
+                        'isAdultContent': row[13],
                         'formats': formats
                     })
                 
@@ -180,8 +182,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cursor.execute('''
                 INSERT INTO books (title, author, genre, rating, price, discount_price, cover, description, 
-                                 badges, ebook_text, ebook_price, is_adult_content)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                 badges, ebook_text, ebook_price, ebook_discount_price, is_adult_content)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             ''', (
                 body_data['title'],
@@ -195,6 +197,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body_data.get('badges', []),
                 body_data.get('ebookText'),
                 body_data.get('ebookPrice'),
+                body_data.get('ebookDiscountPrice'),
                 body_data.get('isAdultContent', False)
             ))
             
@@ -231,7 +234,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 UPDATE books 
                 SET title = %s, author = %s, genre = %s, rating = %s, price = %s, discount_price = %s,
                     cover = %s, description = %s, badges = %s, ebook_text = %s,
-                    ebook_price = %s, is_adult_content = %s, updated_at = CURRENT_TIMESTAMP
+                    ebook_price = %s, ebook_discount_price = %s, is_adult_content = %s, updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
             ''', (
                 body_data['title'],
@@ -245,6 +248,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body_data.get('badges', []),
                 body_data.get('ebookText'),
                 body_data.get('ebookPrice'),
+                body_data.get('ebookDiscountPrice'),
                 body_data.get('isAdultContent', False),
                 book_id
             ))
