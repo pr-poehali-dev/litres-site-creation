@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useBooks, BookFormat, Book } from '@/contexts/BookContext';
 import { useToast } from '@/hooks/use-toast';
-import Icon from '@/components/ui/icon';
+import { BookBasicFields } from './book-form/BookBasicFields';
+import { BookFormatsSection } from './book-form/BookFormatsSection';
+import { BookBadgesSection } from './book-form/BookBadgesSection';
+import { EbookSection } from './book-form/EbookSection';
+import { AdultContentSection } from './book-form/AdultContentSection';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -242,269 +241,59 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Название *</Label>
-              <Input
-                id="title"
-                placeholder="Введите название книги"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="author">Автор *</Label>
-              <Input
-                id="author"
-                placeholder="Введите автора"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                required
-              />
-            </div>
-          </div>
+          <BookBasicFields
+            title={title}
+            setTitle={setTitle}
+            author={author}
+            setAuthor={setAuthor}
+            genre={genre}
+            setGenre={setGenre}
+            price={price}
+            setPrice={setPrice}
+            discountPrice={discountPrice}
+            setDiscountPrice={setDiscountPrice}
+            rating={rating}
+            setRating={setRating}
+            description={description}
+            setDescription={setDescription}
+            coverPreview={coverPreview}
+            handleCoverChange={handleCoverChange}
+          />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="genre">Жанр *</Label>
-              <Select value={genre} onValueChange={setGenre} required>
-                <SelectTrigger id="genre">
-                  <SelectValue placeholder="Выберите жанр" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Классика">Классика</SelectItem>
-                  <SelectItem value="Фантастика">Фантастика</SelectItem>
-                  <SelectItem value="Детектив">Детектив</SelectItem>
-                  <SelectItem value="Романтика">Романтика</SelectItem>
-                  <SelectItem value="Сказка">Сказка</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="price">Цена (₽) *</Label>
-              <Input
-                id="price"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="299"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-            </div>
-          </div>
+          <BookFormatsSection
+            availableFormats={availableFormats}
+            selectedFormats={selectedFormats}
+            handleFormatToggle={handleFormatToggle}
+            handleBookFileChange={handleBookFileChange}
+            bookFiles={bookFiles}
+            bookToEdit={bookToEdit}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="discountPrice">Цена со скидкой (₽)</Label>
-            <Input
-              id="discountPrice"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="199"
-              value={discountPrice}
-              onChange={(e) => setDiscountPrice(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">Если указана, старая цена будет зачёркнута</p>
-          </div>
+          <BookBadgesSection
+            selectedBadges={selectedBadges}
+            setSelectedBadges={setSelectedBadges}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="rating">Рейтинг (1-5) *</Label>
-            <Input
-              id="rating"
-              type="number"
-              min="1"
-              max="5"
-              step="0.1"
-              placeholder="4.5"
-              value={rating}
-              onChange={(e) => setRating(e.target.value)}
-              required
-            />
-          </div>
+          <EbookSection
+            hasEbook={hasEbook}
+            setHasEbook={setHasEbook}
+            ebookText={ebookText}
+            setEbookText={setEbookText}
+            ebookPrice={ebookPrice}
+            setEbookPrice={setEbookPrice}
+          />
 
-          <div className="space-y-2">
-            <Label>Метки (необязательно)</Label>
-            <div className="flex flex-wrap gap-2">
-              {['Новинка', 'Популярное', 'Бестселлер', 'Скидка'].map((badge) => (
-                <div key={badge} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={badge}
-                    checked={selectedBadges.includes(badge)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedBadges([...selectedBadges, badge]);
-                      } else {
-                        setSelectedBadges(selectedBadges.filter(b => b !== badge));
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor={badge}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    {badge}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdultContentSection
+            isAdultContent={isAdultContent}
+            setIsAdultContent={setIsAdultContent}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="cover">Обложка книги *</Label>
-            <Input
-              id="cover"
-              type="file"
-              accept="image/*"
-              onChange={handleCoverChange}
-              required
-            />
-            {coverPreview && (
-              <div className="mt-2">
-                <img src={coverPreview} alt="Превью обложки" className="w-32 h-48 object-cover rounded" />
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Краткое описание *</Label>
-            <Textarea
-              id="description"
-              placeholder="Краткое описание книги..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              required
-            />
-          </div>
-
-          <div className="space-y-3">
-            <Label>Форматы книги для скачивания (необязательно)</Label>
-            <div className="border rounded-lg p-4 space-y-3 max-h-[300px] overflow-y-auto">
-              {availableFormats.map((format) => (
-                <div key={format.value} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={format.value}
-                      checked={selectedFormats.has(format.value)}
-                      onCheckedChange={() => handleFormatToggle(format.value)}
-                    />
-                    <label
-                      htmlFor={format.value}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      {format.label}
-                    </label>
-                  </div>
-                  {selectedFormats.has(format.value) && (
-                    <div className="ml-6">
-                      <Input
-                        type="file"
-                        accept={`.${format.value.split('-')[0]}`}
-                        onChange={(e) => handleBookFileChange(format.value, e)}
-                        className="text-sm"
-                        required
-                      />
-                      {bookFiles.has(format.value) && (
-                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                          <Icon name="CheckCircle" size={12} />
-                          {bookFiles.get(format.value)?.name}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3 border-t pt-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hasEbook"
-                checked={hasEbook}
-                onCheckedChange={(checked) => setHasEbook(checked as boolean)}
-              />
-              <label
-                htmlFor="hasEbook"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Добавить электронную книгу для чтения на сайте
-              </label>
-            </div>
-
-            {hasEbook && (
-              <div className="space-y-3 ml-6">
-                <div className="space-y-2">
-                  <Label htmlFor="ebookPrice">Цена электронной книги (₽) *</Label>
-                  <Input
-                    id="ebookPrice"
-                    type="number"
-                    min="0"
-                    step="1"
-                    placeholder="199"
-                    value={ebookPrice}
-                    onChange={(e) => setEbookPrice(e.target.value)}
-                    required={hasEbook}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ebookText">Полный текст книги *</Label>
-                  <Textarea
-                    id="ebookText"
-                    placeholder="Введите полный текст книги..."
-                    value={ebookText}
-                    onChange={(e) => setEbookText(e.target.value)}
-                    rows={10}
-                    className="font-mono text-sm"
-                    required={hasEbook}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Символов: {ebookText.length}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2 flex items-center gap-2 border-t pt-4">
-            <Checkbox 
-              id="isAdultContent"
-              checked={isAdultContent}
-              onCheckedChange={(checked) => setIsAdultContent(checked as boolean)}
-            />
-            <Label htmlFor="isAdultContent" className="cursor-pointer flex items-center gap-2">
-              <Icon name="AlertTriangle" size={16} className="text-destructive" />
-              <span>Контент 18+</span>
-            </Label>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                resetForm();
-                onOpenChange(false);
-              }}
-            >
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Отмена
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <Icon name="Loader2" className="mr-2 animate-spin" size={18} />
-                  Добавление...
-                </>
-              ) : (
-                <>
-                  <Icon name="Plus" size={18} className="mr-2" />
-                  Добавить книгу
-                </>
-              )}
+              {loading ? 'Сохранение...' : bookToEdit ? 'Сохранить' : 'Добавить'}
             </Button>
           </DialogFooter>
         </form>
