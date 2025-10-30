@@ -93,6 +93,11 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
               18+
             </Badge>
           )}
+          {book.discountPrice && (
+            <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5">
+              Скидка
+            </Badge>
+          )}
           {book.badges && book.badges.length > 0 && book.badges.map((badge) => (
             <Badge 
               key={badge} 
