@@ -178,7 +178,16 @@ export const BookCard = ({ book, index, isFavorite, onToggleFavorite, onAddToCar
         </div>
         
         <div className="flex items-center justify-between pt-1 gap-2">
-          <span className="text-lg font-bold text-primary whitespace-nowrap">{book.price} ₽</span>
+          <div className="flex items-center gap-2">
+            {book.discountPrice ? (
+              <>
+                <span className="text-sm text-muted-foreground line-through">{book.price} ₽</span>
+                <span className="text-lg font-bold text-primary whitespace-nowrap">{book.discountPrice} ₽</span>
+              </>
+            ) : (
+              <span className="text-lg font-bold text-primary whitespace-nowrap">{book.price} ₽</span>
+            )}
+          </div>
           <Button size="sm" onClick={() => onAddToCart(book)} className="h-8 text-xs px-3">
             <Icon name="ShoppingCart" size={12} className="mr-1" />
             Купить

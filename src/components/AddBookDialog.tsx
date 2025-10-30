@@ -33,6 +33,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
   const [author, setAuthor] = useState('');
   const [genre, setGenre] = useState('');
   const [price, setPrice] = useState('');
+  const [discountPrice, setDiscountPrice] = useState('');
   const [rating, setRating] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string>('');
@@ -55,6 +56,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
       setAuthor(bookToEdit.author);
       setGenre(bookToEdit.genre);
       setPrice(bookToEdit.price.toString());
+      setDiscountPrice(bookToEdit.discountPrice?.toString() || '');
       setRating(bookToEdit.rating.toString());
       setCoverPreview(bookToEdit.cover);
       setDescription(bookToEdit.description);
@@ -74,6 +76,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
     setAuthor('');
     setGenre('');
     setPrice('');
+    setDiscountPrice('');
     setRating('');
     setCoverFile(null);
     setCoverPreview('');
@@ -198,6 +201,7 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
         author,
         genre,
         price: parseFloat(price),
+        discountPrice: discountPrice ? parseFloat(discountPrice) : undefined,
         rating: parseFloat(rating),
         cover: coverUrl,
         description,
@@ -290,6 +294,20 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
                 required
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="discountPrice">Цена со скидкой (₽)</Label>
+            <Input
+              id="discountPrice"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="199"
+              value={discountPrice}
+              onChange={(e) => setDiscountPrice(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Если указана, старая цена будет зачёркнута</p>
           </div>
 
           <div className="space-y-2">

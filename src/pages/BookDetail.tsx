@@ -222,9 +222,20 @@ const BookDetail = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Цена скачивания</p>
-                    <p className="text-3xl font-bold text-primary">
-                      {isDownloadFree ? 'Бесплатно' : `${book.price} ₽`}
-                    </p>
+                    {isDownloadFree ? (
+                      <p className="text-3xl font-bold text-primary">Бесплатно</p>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        {book.discountPrice ? (
+                          <>
+                            <p className="text-2xl text-muted-foreground line-through">{book.price} ₽</p>
+                            <p className="text-3xl font-bold text-primary">{book.discountPrice} ₽</p>
+                          </>
+                        ) : (
+                          <p className="text-3xl font-bold text-primary">{book.price} ₽</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex gap-3 flex-wrap">

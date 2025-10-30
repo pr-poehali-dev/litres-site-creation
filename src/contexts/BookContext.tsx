@@ -13,6 +13,7 @@ export interface Book {
   genre: string;
   rating: number;
   price: number;
+  discountPrice?: number;
   cover: string;
   description: string;
   formats: BookFormat[];
