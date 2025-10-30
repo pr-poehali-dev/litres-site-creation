@@ -98,7 +98,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if book_id:
                 cursor.execute('''
-                    SELECT id, title, author, genre, rating, price, cover, description, 
+                    SELECT id, title, author, genre, rating, price, discount_price, cover, description, 
                            badges, ebook_text, ebook_price, is_adult_content
                     FROM books WHERE id = %s
                 ''', (book_id,))
@@ -122,12 +122,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'genre': row[3],
                     'rating': float(row[4]),
                     'price': float(row[5]),
-                    'cover': row[6],
-                    'description': row[7],
-                    'badges': row[8] or [],
-                    'ebookText': row[9],
-                    'ebookPrice': float(row[10]) if row[10] else None,
-                    'isAdultContent': row[11],
+                    'discountPrice': float(row[6]) if row[6] else None,
+                    'cover': row[7],
+                    'description': row[8],
+                    'badges': row[9] or [],
+                    'ebookText': row[10],
+                    'ebookPrice': float(row[11]) if row[11] else None,
+                    'isAdultContent': row[12],
                     'formats': formats
                 }
                 
@@ -139,7 +140,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             else:
                 cursor.execute('''
-                    SELECT id, title, author, genre, rating, price, cover, description, 
+                    SELECT id, title, author, genre, rating, price, discount_price, cover, description, 
                            badges, ebook_text, ebook_price, is_adult_content
                     FROM books ORDER BY created_at DESC
                 ''')
@@ -157,12 +158,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'genre': row[3],
                         'rating': float(row[4]),
                         'price': float(row[5]),
-                        'cover': row[6],
-                        'description': row[7],
-                        'badges': row[8] or [],
-                        'ebookText': row[9],
-                        'ebookPrice': float(row[10]) if row[10] else None,
-                        'isAdultContent': row[11],
+                        'discountPrice': float(row[6]) if row[6] else None,
+                        'cover': row[7],
+                        'description': row[8],
+                        'badges': row[9] or [],
+                        'ebookText': row[10],
+                        'ebookPrice': float(row[11]) if row[11] else None,
+                        'isAdultContent': row[12],
                         'formats': formats
                     })
                 
@@ -177,9 +179,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             body_data = json.loads(event.get('body', '{}'))
             
             cursor.execute('''
-                INSERT INTO books (title, author, genre, rating, price, cover, description, 
+                INSERT INTO books (title, author, genre, rating, price, discount_price, cover, description, 
                                  badges, ebook_text, ebook_price, is_adult_content)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             ''', (
                 body_data['title'],
@@ -187,6 +189,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body_data['genre'],
                 body_data.get('rating', 0),
                 body_data['price'],
+                body_data.get('discountPrice'),
                 body_data.get('cover', ''),
                 body_data.get('description', ''),
                 body_data.get('badges', []),
@@ -226,7 +229,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cursor.execute('''
                 UPDATE books 
-                SET title = %s, author = %s, genre = %s, rating = %s, price = %s,
+                SET title = %s, author = %s, genre = %s, rating = %s, price = %s, discount_price = %s,
                     cover = %s, description = %s, badges = %s, ebook_text = %s,
                     ebook_price = %s, is_adult_content = %s, updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
@@ -236,6 +239,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body_data['genre'],
                 body_data.get('rating', 0),
                 body_data['price'],
+                body_data.get('discountPrice'),
                 body_data.get('cover', ''),
                 body_data.get('description', ''),
                 body_data.get('badges', []),
