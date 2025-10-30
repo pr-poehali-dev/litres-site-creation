@@ -22,7 +22,7 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
             <img 
-              src="https://cdn.poehali.dev/files/0bdd5dee-ce93-47b5-b390-9570bed156c2.png" 
+              src="https://cdn.poehali.dev/files/0919a5ae-9510-4682-b351-54378b9bfc56.jpg" 
               alt="Pulse Book Logo" 
               className="h-10 w-10 object-contain"
             />
