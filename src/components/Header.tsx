@@ -120,6 +120,14 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
                     <Icon name="Settings" size={16} className="mr-2" />
                     Настройки
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/premium')}>
+                    <Icon name="Crown" size={16} className="mr-2" />
+                    Premium
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/gold')}>
+                    <Icon name="Award" size={16} className="mr-2" />
+                    Gold
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-destructive">
                     <Icon name="LogOut" size={16} className="mr-2" />

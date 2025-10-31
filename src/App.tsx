@@ -19,6 +19,8 @@ import BookDetail from "./pages/BookDetail";
 import ReadBook from "./pages/ReadBook";
 import Users from "./pages/Users";
 import Dashboard from "./pages/Dashboard";
+import Premium from "./pages/Premium";
+import Gold from "./pages/Gold";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +47,8 @@ const App = () => (
                     <Route path="/read/:id" element={<ReadBook />} />
                     <Route path="/users" element={<Users />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/premium" element={<Premium />} />
+                    <Route path="/gold" element={<Gold />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
