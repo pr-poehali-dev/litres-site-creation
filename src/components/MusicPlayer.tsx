@@ -75,7 +75,10 @@ export const MusicPlayer = () => {
     const audioAds = JSON.parse(audioAdsString);
     if (!audioAds || audioAds.length === 0) return false;
 
-    const shouldPlayAd = Math.random() < 0.3;
+    const probabilityString = localStorage.getItem('adProbability');
+    const probability = probabilityString ? parseInt(probabilityString) / 100 : 0.3;
+    
+    const shouldPlayAd = Math.random() < probability;
     
     if (shouldPlayAd) {
       const randomAd = audioAds[Math.floor(Math.random() * audioAds.length)];
@@ -101,7 +104,10 @@ export const MusicPlayer = () => {
     const newPlayCount = playCount + 1;
     setPlayCount(newPlayCount);
 
-    if (newPlayCount % 3 === 0) {
+    const frequencyString = localStorage.getItem('adFrequency');
+    const frequency = frequencyString ? parseInt(frequencyString) : 3;
+
+    if (newPlayCount % frequency === 0) {
       if (playRandomAd()) {
         setTimeout(() => {
           const currentIndex = tracks.findIndex(t => t.id === currentTrack.id);

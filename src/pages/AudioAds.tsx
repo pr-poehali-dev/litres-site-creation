@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +22,8 @@ export const AudioAds = () => {
   const navigate = useNavigate();
   const [audioAds, setAudioAds] = useState<AudioAd[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [adFrequency, setAdFrequency] = useState(3);
+  const [adProbability, setAdProbability] = useState(30);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -32,6 +36,16 @@ export const AudioAds = () => {
     const savedAds = localStorage.getItem('audioAds');
     if (savedAds) {
       setAudioAds(JSON.parse(savedAds));
+    }
+
+    const savedFrequency = localStorage.getItem('adFrequency');
+    if (savedFrequency) {
+      setAdFrequency(parseInt(savedFrequency));
+    }
+
+    const savedProbability = localStorage.getItem('adProbability');
+    if (savedProbability) {
+      setAdProbability(parseInt(savedProbability));
     }
   }, [isAdmin, navigate]);
 
@@ -111,6 +125,18 @@ export const AudioAds = () => {
     });
   };
 
+  const handleFrequencyChange = (value: number[]) => {
+    const newFrequency = value[0];
+    setAdFrequency(newFrequency);
+    localStorage.setItem('adFrequency', newFrequency.toString());
+  };
+
+  const handleProbabilityChange = (value: number[]) => {
+    const newProbability = value[0];
+    setAdProbability(newProbability);
+    localStorage.setItem('adProbability', newProbability.toString());
+  };
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -141,6 +167,56 @@ export const AudioAds = () => {
             Загружайте аудио рекламу, которая будет случайно воспроизводиться при прослушивании музыки
           </p>
         </div>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Настройки частоты рекламы</CardTitle>
+            <CardDescription>
+              Настройте, как часто будет воспроизводиться аудио реклама
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="frequency" className="text-sm font-medium">
+                  Воспроизводить рекламу каждые {adFrequency} {adFrequency === 1 ? 'трек' : adFrequency < 5 ? 'трека' : 'треков'}
+                </Label>
+              </div>
+              <Slider
+                id="frequency"
+                value={[adFrequency]}
+                onValueChange={handleFrequencyChange}
+                min={1}
+                max={10}
+                step={1}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Диапазон: от каждого трека до каждого 10-го трека
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="probability" className="text-sm font-medium">
+                  Вероятность показа: {adProbability}%
+                </Label>
+              </div>
+              <Slider
+                id="probability"
+                value={[adProbability]}
+                onValueChange={handleProbabilityChange}
+                min={10}
+                max={100}
+                step={10}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Шанс воспроизведения рекламы в момент, когда достигнута частота
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="mb-8">
           <CardHeader>
