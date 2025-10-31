@@ -8,10 +8,13 @@ import { useMusic } from '@/contexts/MusicContext';
 export const MusicPlayer = () => {
   const { currentTrack, isPlaying, setIsPlaying, tracks, setCurrentTrack } = useMusic();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const adAudioRef = useRef<HTMLAudioElement>(null);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(70);
   const [currentTime, setCurrentTime] = useState('0:00');
   const [duration, setDuration] = useState('0:00');
+  const [playCount, setPlayCount] = useState(0);
+  const [isPlayingAd, setIsPlayingAd] = useState(false);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -65,8 +68,50 @@ export const MusicPlayer = () => {
     setVolume(value[0]);
   };
 
+  const playRandomAd = () => {
+    const audioAdsString = localStorage.getItem('audioAds');
+    if (!audioAdsString) return false;
+
+    const audioAds = JSON.parse(audioAdsString);
+    if (!audioAds || audioAds.length === 0) return false;
+
+    const shouldPlayAd = Math.random() < 0.3;
+    
+    if (shouldPlayAd) {
+      const randomAd = audioAds[Math.floor(Math.random() * audioAds.length)];
+      
+      if (adAudioRef.current && audioRef.current) {
+        setIsPlayingAd(true);
+        audioRef.current.pause();
+        
+        adAudioRef.current.src = randomAd.url;
+        adAudioRef.current.volume = audioRef.current.volume;
+        adAudioRef.current.play();
+        
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
   const handleNext = () => {
     if (!currentTrack) return;
+    
+    const newPlayCount = playCount + 1;
+    setPlayCount(newPlayCount);
+
+    if (newPlayCount % 3 === 0) {
+      if (playRandomAd()) {
+        setTimeout(() => {
+          const currentIndex = tracks.findIndex(t => t.id === currentTrack.id);
+          const nextTrack = tracks[currentIndex + 1] || tracks[0];
+          setCurrentTrack(nextTrack);
+        }, 100);
+        return;
+      }
+    }
+
     const currentIndex = tracks.findIndex(t => t.id === currentTrack.id);
     const nextTrack = tracks[currentIndex + 1] || tracks[0];
     setCurrentTrack(nextTrack);
@@ -79,6 +124,13 @@ export const MusicPlayer = () => {
     setCurrentTrack(prevTrack);
   };
 
+  const handleAdEnded = () => {
+    setIsPlayingAd(false);
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
+  };
+
   if (!currentTrack) return null;
 
   return (
@@ -88,6 +140,10 @@ export const MusicPlayer = () => {
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleNext}
+      />
+      <audio
+        ref={adAudioRef}
+        onEnded={handleAdEnded}
       />
       
       <div className="w-full px-3 md:px-4 py-3 md:py-4">
@@ -109,19 +165,40 @@ export const MusicPlayer = () => {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <h4 className="font-semibold text-sm md:text-base line-clamp-1">{currentTrack.title}</h4>
-                <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">{currentTrack.artist}</p>
+                <h4 className="font-semibold text-sm md:text-base line-clamp-1">
+                  {isPlayingAd ? '🔊 Рекламная пауза' : currentTrack.title}
+                </h4>
+                <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">
+                  {isPlayingAd ? 'Слушайте рекламу' : currentTrack.artist}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <Button size="icon" variant="ghost" onClick={handlePrevious} className="w-8 h-8 md:w-10 md:h-10">
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                onClick={handlePrevious} 
+                className="w-8 h-8 md:w-10 md:h-10"
+                disabled={isPlayingAd}
+              >
                 <Icon name="SkipBack" size={16} className="md:w-5 md:h-5" />
               </Button>
-              <Button size="icon" className="w-10 h-10 md:w-12 md:h-12" onClick={() => setIsPlaying(!isPlaying)}>
+              <Button 
+                size="icon" 
+                className="w-10 h-10 md:w-12 md:h-12" 
+                onClick={() => setIsPlaying(!isPlaying)}
+                disabled={isPlayingAd}
+              >
                 <Icon name={isPlaying ? "Pause" : "Play"} size={20} className="md:w-6 md:h-6" fill="currentColor" />
               </Button>
-              <Button size="icon" variant="ghost" onClick={handleNext} className="w-8 h-8 md:w-10 md:h-10">
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                onClick={handleNext} 
+                className="w-8 h-8 md:w-10 md:h-10"
+                disabled={isPlayingAd}
+              >
                 <Icon name="SkipForward" size={16} className="md:w-5 md:h-5" />
               </Button>
             </div>
