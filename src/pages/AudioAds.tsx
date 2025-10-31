@@ -16,6 +16,7 @@ interface AudioAd {
   uploadDate: string;
   plays?: number;
   lastPlayed?: string;
+  playHistory?: Array<{ date: string; count: number }>;
 }
 
 export const AudioAds = () => {
@@ -139,6 +140,7 @@ export const AudioAds = () => {
       ...ad,
       plays: 0,
       lastPlayed: undefined,
+      playHistory: [],
     }));
     setAudioAds(resetAds);
     localStorage.setItem('audioAds', JSON.stringify(resetAds));
@@ -149,6 +151,38 @@ export const AudioAds = () => {
       description: 'Статистика сброшена',
     });
   };
+
+  const getChartData = () => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
+
+    const dataByDate: Record<string, number> = {};
+    last7Days.forEach(date => {
+      dataByDate[date] = 0;
+    });
+
+    audioAds.forEach(ad => {
+      if (ad.playHistory) {
+        ad.playHistory.forEach(({ date, count }) => {
+          if (dataByDate.hasOwnProperty(date)) {
+            dataByDate[date] += count;
+          }
+        });
+      }
+    });
+
+    return last7Days.map(date => ({
+      date,
+      plays: dataByDate[date],
+      label: new Date(date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }),
+    }));
+  };
+
+  const chartData = getChartData();
+  const maxPlays = Math.max(...chartData.map(d => d.plays), 1);
 
   const handleFrequencyChange = (value: number[]) => {
     const newFrequency = value[0];
@@ -235,6 +269,44 @@ export const AudioAds = () => {
             </CardContent>
           </Card>
         </div>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Статистика показов за последние 7 дней</CardTitle>
+            <CardDescription>
+              График отображает количество воспроизведений рекламы по дням
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 flex items-end justify-between gap-2">
+              {chartData.map((item, index) => (
+                <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="w-full flex flex-col items-center justify-end flex-1">
+                    <div className="text-xs font-medium mb-1 text-muted-foreground">
+                      {item.plays > 0 ? item.plays : ''}
+                    </div>
+                    <div
+                      className="w-full bg-primary/80 hover:bg-primary transition-colors rounded-t-md relative group"
+                      style={{
+                        height: `${maxPlays > 0 ? (item.plays / maxPlays) * 100 : 0}%`,
+                        minHeight: item.plays > 0 ? '8px' : '0px',
+                      }}
+                    >
+                      {item.plays > 0 && (
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover border rounded px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                          {item.plays} {item.plays === 1 ? 'показ' : item.plays < 5 ? 'показа' : 'показов'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground font-medium">
+                    {item.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="mb-8">
           <CardHeader>

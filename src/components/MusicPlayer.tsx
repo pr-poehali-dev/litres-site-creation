@@ -92,10 +92,21 @@ export const MusicPlayer = () => {
         adAudioRef.current.volume = audioRef.current.volume;
         adAudioRef.current.play();
 
+        const today = new Date().toISOString().split('T')[0];
+        const playHistory = randomAd.playHistory || [];
+        const todayEntry = playHistory.find(entry => entry.date === today);
+        
+        const updatedHistory = todayEntry
+          ? playHistory.map(entry =>
+              entry.date === today ? { ...entry, count: entry.count + 1 } : entry
+            )
+          : [...playHistory, { date: today, count: 1 }];
+
         audioAds[randomIndex] = {
           ...randomAd,
           plays: (randomAd.plays || 0) + 1,
           lastPlayed: new Date().toISOString(),
+          playHistory: updatedHistory,
         };
         localStorage.setItem('audioAds', JSON.stringify(audioAds));
         
