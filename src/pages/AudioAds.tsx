@@ -14,6 +14,8 @@ interface AudioAd {
   url: string;
   duration: number;
   uploadDate: string;
+  plays?: number;
+  lastPlayed?: string;
 }
 
 export const AudioAds = () => {
@@ -24,6 +26,7 @@ export const AudioAds = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [adFrequency, setAdFrequency] = useState(3);
   const [adProbability, setAdProbability] = useState(30);
+  const [totalPlays, setTotalPlays] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -35,7 +38,10 @@ export const AudioAds = () => {
 
     const savedAds = localStorage.getItem('audioAds');
     if (savedAds) {
-      setAudioAds(JSON.parse(savedAds));
+      const ads = JSON.parse(savedAds);
+      setAudioAds(ads);
+      const total = ads.reduce((sum: number, ad: AudioAd) => sum + (ad.plays || 0), 0);
+      setTotalPlays(total);
     }
 
     const savedFrequency = localStorage.getItem('adFrequency');
@@ -119,9 +125,28 @@ export const AudioAds = () => {
     setAudioAds(updatedAds);
     localStorage.setItem('audioAds', JSON.stringify(updatedAds));
     
+    const total = updatedAds.reduce((sum, ad) => sum + (ad.plays || 0), 0);
+    setTotalPlays(total);
+    
     toast({
       title: 'Успешно',
       description: 'Аудио реклама удалена',
+    });
+  };
+
+  const resetStatistics = () => {
+    const resetAds = audioAds.map(ad => ({
+      ...ad,
+      plays: 0,
+      lastPlayed: undefined,
+    }));
+    setAudioAds(resetAds);
+    localStorage.setItem('audioAds', JSON.stringify(resetAds));
+    setTotalPlays(0);
+    
+    toast({
+      title: 'Успешно',
+      description: 'Статистика сброшена',
     });
   };
 
@@ -166,6 +191,49 @@ export const AudioAds = () => {
           <p className="text-muted-foreground">
             Загружайте аудио рекламу, которая будет случайно воспроизводиться при прослушивании музыки
           </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Всего показов</CardDescription>
+              <CardTitle className="text-3xl">{totalPlays}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Icon name="TrendingUp" size={14} className="mr-1" />
+                Общая статистика
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Активных реклам</CardDescription>
+              <CardTitle className="text-3xl">{audioAds.length}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Icon name="Music" size={14} className="mr-1" />
+                Доступно для показа
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Средний показ</CardDescription>
+              <CardTitle className="text-3xl">
+                {audioAds.length > 0 ? Math.round(totalPlays / audioAds.length) : 0}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Icon name="BarChart" size={14} className="mr-1" />
+                На одну рекламу
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Card className="mb-8">
@@ -245,7 +313,15 @@ export const AudioAds = () => {
         </Card>
 
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Активные рекламы ({audioAds.length})</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Активные рекламы ({audioAds.length})</h2>
+            {totalPlays > 0 && (
+              <Button variant="outline" size="sm" onClick={resetStatistics}>
+                <Icon name="RotateCcw" size={16} className="mr-2" />
+                Сбросить статистику
+              </Button>
+            )}
+          </div>
           
           {audioAds.length === 0 ? (
             <Card>
@@ -270,7 +346,7 @@ export const AudioAds = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{ad.name}</h3>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <div className="flex items-center flex-wrap gap-3 text-sm text-muted-foreground mt-1">
                           <span className="flex items-center gap-1">
                             <Icon name="Clock" size={14} />
                             {formatDuration(ad.duration)}
@@ -279,6 +355,16 @@ export const AudioAds = () => {
                             <Icon name="Calendar" size={14} />
                             {formatDate(ad.uploadDate)}
                           </span>
+                          <span className="flex items-center gap-1 text-primary">
+                            <Icon name="Activity" size={14} />
+                            Показов: {ad.plays || 0}
+                          </span>
+                          {ad.lastPlayed && (
+                            <span className="flex items-center gap-1 text-xs">
+                              <Icon name="PlayCircle" size={14} />
+                              Последний: {formatDate(ad.lastPlayed)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

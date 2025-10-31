@@ -81,7 +81,8 @@ export const MusicPlayer = () => {
     const shouldPlayAd = Math.random() < probability;
     
     if (shouldPlayAd) {
-      const randomAd = audioAds[Math.floor(Math.random() * audioAds.length)];
+      const randomIndex = Math.floor(Math.random() * audioAds.length);
+      const randomAd = audioAds[randomIndex];
       
       if (adAudioRef.current && audioRef.current) {
         setIsPlayingAd(true);
@@ -90,6 +91,13 @@ export const MusicPlayer = () => {
         adAudioRef.current.src = randomAd.url;
         adAudioRef.current.volume = audioRef.current.volume;
         adAudioRef.current.play();
+
+        audioAds[randomIndex] = {
+          ...randomAd,
+          plays: (randomAd.plays || 0) + 1,
+          lastPlayed: new Date().toISOString(),
+        };
+        localStorage.setItem('audioAds', JSON.stringify(audioAds));
         
         return true;
       }
