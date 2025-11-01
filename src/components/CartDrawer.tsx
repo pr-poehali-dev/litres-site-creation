@@ -29,6 +29,7 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
   const [bonusToUse, setBonusToUse] = useState(0);
 
   const canUseBonus = cart.some(item => item.canPayWithBonus);
+  const earnedBonus = cart.reduce((sum, item) => sum + (item.bonusAmount || 0), 0);
 
   useEffect(() => {
     if (user?.email) {
@@ -163,25 +164,35 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
             <ScrollArea className="flex-1 -mx-6 px-6 my-6">
               <div className="space-y-4">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 group">
-                    <img
-                      src={item.cover}
-                      alt={item.title}
-                      className="w-16 h-24 object-cover rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium line-clamp-2 mb-1">{item.title}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">{item.author}</p>
-                      <p className="text-lg font-bold text-primary">{item.price} ₽</p>
+                  <div key={item.id} className="space-y-2">
+                    <div className="flex gap-4 group">
+                      <img
+                        src={item.cover}
+                        alt={item.title}
+                        className="w-16 h-24 object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium line-clamp-2 mb-1">{item.title}</h4>
+                        <p className="text-sm text-muted-foreground mb-2">{item.author}</p>
+                        <p className="text-lg font-bold text-primary">{item.price} ₽</p>
+                        {item.bonusAmount && item.bonusAmount > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <Icon name="Gift" size={14} className="text-green-600" />
+                            <span className="text-xs text-green-600 font-medium">
+                              +{item.bonusAmount} ₽ бонусов
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        <Icon name="Trash2" size={18} className="text-destructive" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      <Icon name="Trash2" size={18} className="text-destructive" />
-                    </Button>
                   </div>
                 ))}
               </div>
@@ -213,6 +224,20 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
                       <p className="text-sm font-medium text-primary">-{bonusToUse} ₽</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {earnedBonus > 0 && (
+                <div className="p-3 border rounded-lg bg-green-500/10 border-green-500/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon name="Gift" size={16} className="text-green-600" />
+                    <span className="text-sm font-medium text-green-600">
+                      Бонус за покупку
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Вы получите <span className="font-bold text-green-600">+{earnedBonus} ₽</span> бонусов после оформления заказа
+                  </p>
                 </div>
               )}
 
