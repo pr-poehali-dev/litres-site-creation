@@ -74,6 +74,8 @@ const Index = () => {
       price: book.price,
       cover: book.cover,
       genre: book.genre,
+      bonusAmount: book.bonusAmount,
+      canPayWithBonus: book.canPayWithBonus,
     });
     toast({
       title: 'Добавлено в корзину',

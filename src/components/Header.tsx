@@ -122,6 +122,10 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
                     <Icon name="ShoppingBag" size={16} className="mr-2" />
                     Мои заказы
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/bonus-card')}>
+                    <Icon name="CreditCard" size={16} className="mr-2" />
+                    Бонусная карта
+                  </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Icon name="Settings" size={16} className="mr-2" />
                     Настройки

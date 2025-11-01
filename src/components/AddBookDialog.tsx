@@ -8,6 +8,7 @@ import { BookFormatsSection } from './book-form/BookFormatsSection';
 import { BookBadgesSection } from './book-form/BookBadgesSection';
 import { EbookSection } from './book-form/EbookSection';
 import { AdultContentSection } from './book-form/AdultContentSection';
+import { BonusSection } from './book-form/BonusSection';
 
 interface AddBookDialogProps {
   open: boolean;
@@ -45,6 +46,8 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
   const [ebookText, setEbookText] = useState('');
   const [ebookPrice, setEbookPrice] = useState('');
   const [isAdultContent, setIsAdultContent] = useState(false);
+  const [bonusAmount, setBonusAmount] = useState('');
+  const [canPayWithBonus, setCanPayWithBonus] = useState(false);
 
   const { addBook, updateBook } = useBooks();
   const { toast } = useToast();
@@ -65,6 +68,8 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
       setEbookText(bookToEdit.ebookText || '');
       setEbookPrice(bookToEdit.ebookPrice?.toString() || '');
       setIsAdultContent(bookToEdit.isAdultContent || false);
+      setBonusAmount(bookToEdit.bonusAmount?.toString() || '');
+      setCanPayWithBonus(bookToEdit.canPayWithBonus || false);
     } else {
       resetForm();
     }
@@ -87,6 +92,8 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
     setEbookText('');
     setEbookPrice('');
     setIsAdultContent(false);
+    setBonusAmount('');
+    setCanPayWithBonus(false);
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,6 +216,8 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
         ebookText: hasEbook ? ebookText : undefined,
         ebookPrice: hasEbook ? parseFloat(ebookPrice) : undefined,
         isAdultContent,
+        bonusAmount: bonusAmount ? parseFloat(bonusAmount) : undefined,
+        canPayWithBonus,
       };
 
       if (bookToEdit) {
@@ -286,6 +295,13 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
           <AdultContentSection
             isAdultContent={isAdultContent}
             setIsAdultContent={setIsAdultContent}
+          />
+
+          <BonusSection
+            bonusAmount={bonusAmount}
+            setBonusAmount={setBonusAmount}
+            canPayWithBonus={canPayWithBonus}
+            setCanPayWithBonus={setCanPayWithBonus}
           />
 
           <DialogFooter>

@@ -1,8 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +24,32 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
   const { isAuthenticated, user } = useAuth();
   const { addPurchase } = usePurchases();
   const { toast } = useToast();
+  const [useBonus, setUseBonus] = useState(false);
+  const [bonusBalance, setBonusBalance] = useState(0);
+  const [bonusToUse, setBonusToUse] = useState(0);
+
+  const canUseBonus = cart.some(item => item.canPayWithBonus);
+
+  useEffect(() => {
+    if (user?.email) {
+      const userBonusData = localStorage.getItem(`bonusCard_${user.email}`);
+      if (userBonusData) {
+        const data = JSON.parse(userBonusData);
+        setBonusBalance(data.balance || 0);
+      }
+    }
+  }, [user, open]);
+
+  useEffect(() => {
+    if (useBonus && canUseBonus) {
+      const maxBonusUse = Math.min(bonusBalance, totalAmount);
+      setBonusToUse(maxBonusUse);
+    } else {
+      setBonusToUse(0);
+    }
+  }, [useBonus, bonusBalance, totalAmount, canUseBonus]);
+
+  const finalAmount = totalAmount - bonusToUse;
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -47,13 +76,57 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
     }));
 
     addPurchase(user!.id, purchaseItems);
+
+    const userBonusData = localStorage.getItem(`bonusCard_${user!.email}`);
+    const bonusData = userBonusData ? JSON.parse(userBonusData) : { balance: 0, cardNumber: '', transactions: [] };
+
+    let newBalance = bonusData.balance || 0;
+    const transactions = bonusData.transactions || [];
+
+    if (useBonus && bonusToUse > 0) {
+      newBalance -= bonusToUse;
+      transactions.push({
+        id: Date.now().toString() + '-spend',
+        date: new Date().toISOString(),
+        type: 'spend',
+        amount: bonusToUse,
+        description: `Оплата заказа (${itemCount} ${itemCount === 1 ? 'книга' : itemCount < 5 ? 'книги' : 'книг'})`,
+      });
+    }
+
+    const earnedBonus = cart.reduce((sum, item) => sum + (item.bonusAmount || 0), 0);
+    if (earnedBonus > 0) {
+      newBalance += earnedBonus;
+      transactions.push({
+        id: Date.now().toString() + '-earn',
+        date: new Date().toISOString(),
+        type: 'earn',
+        amount: earnedBonus,
+        description: `Бонус за покупку (${itemCount} ${itemCount === 1 ? 'книга' : itemCount < 5 ? 'книги' : 'книг'})`,
+      });
+    }
+
+    bonusData.balance = newBalance;
+    bonusData.transactions = transactions;
+    localStorage.setItem(`bonusCard_${user!.email}`, JSON.stringify(bonusData));
+
     clearCart();
     
+    const bonusMessages = [];
+    if (useBonus && bonusToUse > 0) {
+      bonusMessages.push(`Списано ${bonusToUse} ₽ бонусов`);
+    }
+    if (earnedBonus > 0) {
+      bonusMessages.push(`Начислено ${earnedBonus} ₽ бонусов`);
+    }
+
     toast({
       title: 'Покупка оформлена!',
-      description: `Вы успешно приобрели ${itemCount} ${itemCount === 1 ? 'книгу' : 'книги'} на сумму ${totalAmount} ₽`,
+      description: `Вы успешно приобрели ${itemCount} ${itemCount === 1 ? 'книгу' : itemCount < 5 ? 'книги' : 'книг'} на сумму ${finalAmount} ₽${bonusMessages.length > 0 ? '. ' + bonusMessages.join('. ') : ''}`,
     });
 
+    setUseBonus(false);
+    setBonusToUse(0);
     onOpenChange(false);
     navigate('/profile');
   };
@@ -117,9 +190,48 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
             <Separator className="my-4" />
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between text-lg">
-                <span className="font-medium">Итого:</span>
-                <span className="font-bold text-primary text-2xl">{totalAmount} ₽</span>
+              {canUseBonus && bonusBalance > 0 && (
+                <div className="flex items-center space-x-2 p-3 border rounded-lg bg-muted/30">
+                  <Checkbox
+                    id="useBonus"
+                    checked={useBonus}
+                    onCheckedChange={(checked) => setUseBonus(checked as boolean)}
+                  />
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="useBonus"
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      Оплатить бонусами
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Доступно: {bonusBalance} ₽
+                    </p>
+                  </div>
+                  {useBonus && bonusToUse > 0 && (
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-primary">-{bonusToUse} ₽</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Сумма:</span>
+                  <span>{totalAmount} ₽</span>
+                </div>
+                {useBonus && bonusToUse > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Бонусы:</span>
+                    <span className="text-primary">-{bonusToUse} ₽</span>
+                  </div>
+                )}
+                <Separator />
+                <div className="flex items-center justify-between text-lg">
+                  <span className="font-medium">К оплате:</span>
+                  <span className="font-bold text-primary text-2xl">{finalAmount} ₽</span>
+                </div>
               </div>
 
               <SheetFooter className="flex-col gap-2">

@@ -21,6 +21,8 @@ export interface Book {
   ebookText?: string;
   ebookPrice?: number;
   isAdultContent?: boolean;
+  bonusAmount?: number;
+  canPayWithBonus?: boolean;
 }
 
 interface BookContextType {

@@ -73,6 +73,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         setUser(userData);
         localStorage.setItem('bookstore_user', JSON.stringify(userData));
+
+        const cardNumber = generateCardNumber();
+        const bonusCardData = {
+          balance: 0,
+          cardNumber,
+          transactions: [],
+        };
+        localStorage.setItem(`bonusCard_${email}`, JSON.stringify(bonusCardData));
+
         return true;
       }
       return false;
@@ -80,6 +89,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Registration failed:', error);
       return false;
     }
+  };
+
+  const generateCardNumber = () => {
+    const prefix = '4276';
+    const randomPart = Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0');
+    return `${prefix} ${randomPart.slice(0, 4)} ${randomPart.slice(4, 8)} ${randomPart.slice(8, 12)}`;
   };
 
   const logout = () => {

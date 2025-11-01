@@ -7,6 +7,8 @@ export interface CartItem {
   price: number;
   cover: string;
   genre: string;
+  bonusAmount?: number;
+  canPayWithBonus?: boolean;
 }
 
 interface CartContextType {
