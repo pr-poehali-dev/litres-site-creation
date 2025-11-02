@@ -176,6 +176,17 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
           setLoading(false);
           return;
         }
+        
+        const file = bookFiles.get(format);
+        if (file && file.size > 5 * 1024 * 1024) {
+          toast({
+            title: 'Файл слишком большой',
+            description: `Файл ${format.toUpperCase()} весит ${(file.size / 1024 / 1024).toFixed(1)} МБ. Максимум 5 МБ.`,
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
       }
 
       let coverUrl = bookToEdit?.cover || '/placeholder.svg';
