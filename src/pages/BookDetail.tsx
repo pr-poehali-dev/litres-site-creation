@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePurchases } from '@/contexts/PurchaseContext';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import { YooMoneyPayment } from '@/components/YooMoneyPayment';
 
 const BookDetail = () => {
   const { id } = useParams();
@@ -250,14 +251,20 @@ const BookDetail = () => {
                         Скачать ({selectedFormat.toUpperCase()})
                       </Button>
                     ) : (
-                      <Button 
-                        size="lg" 
-                        className="flex-1 min-w-[200px]"
-                        onClick={() => handleAddToCart('download')}
-                      >
-                        <Icon name="ShoppingCart" size={20} className="mr-2" />
-                        Купить
-                      </Button>
+                      <>
+                        <div className="flex-1 min-w-[200px]">
+                          <YooMoneyPayment book={book} purchaseType="download" />
+                        </div>
+                        <Button 
+                          size="lg" 
+                          variant="outline"
+                          className="flex-1 min-w-[200px]"
+                          onClick={() => handleAddToCart('download')}
+                        >
+                          <Icon name="ShoppingCart" size={20} className="mr-2" />
+                          В корзину
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -284,14 +291,20 @@ const BookDetail = () => {
                         Читать онлайн
                       </Button>
                     ) : (
-                      <Button 
-                        size="lg" 
-                        className="flex-1 min-w-[200px]"
-                        onClick={() => handleAddToCart('ebook')}
-                      >
-                        <Icon name="ShoppingCart" size={20} className="mr-2" />
-                        Купить
-                      </Button>
+                      <>
+                        <div className="flex-1 min-w-[200px]">
+                          <YooMoneyPayment book={book} purchaseType="read" />
+                        </div>
+                        <Button 
+                          size="lg" 
+                          variant="outline"
+                          className="flex-1 min-w-[200px]"
+                          onClick={() => handleAddToCart('ebook')}
+                        >
+                          <Icon name="ShoppingCart" size={20} className="mr-2" />
+                          В корзину
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

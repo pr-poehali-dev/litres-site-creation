@@ -1,5 +1,6 @@
 import json
 import os
+import hashlib
 import psycopg2
 from typing import Dict, Any, List, Optional
 
@@ -26,10 +27,114 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         }
     
     db_url = os.environ.get('DATABASE_URL')
-    conn = psycopg2.connect(db_url)
-    cursor = conn.cursor()
+    wallet_id = os.environ.get('YOOMONEY_WALLET_ID')
+    secret_key = os.environ.get('YOOMONEY_SECRET_KEY')
     
     schema_name = 't_p48697888_litres_site_creation'
+    
+    if '/yoomoney-webhook' in path and method == 'POST':
+        body_str = event.get('body', '')
+        params = {}
+        
+        if body_str:
+            for pair in body_str.split('&'):
+                if '=' in pair:
+                    key, value = pair.split('=', 1)
+                    params[key] = value
+        
+        notification_type = params.get('notification_type')
+        operation_id = params.get('operation_id')
+        amount = params.get('amount')
+        currency = params.get('currency')
+        datetime_str = params.get('datetime')
+        sender = params.get('sender')
+        codepro = params.get('codepro')
+        label = params.get('label')
+        sha1_hash = params.get('sha1_hash')
+        
+        hash_string = f"{notification_type}&{operation_id}&{amount}&{currency}&{datetime_str}&{sender}&{codepro}&{secret_key}&{label}"
+        calculated_hash = hashlib.sha1(hash_string.encode()).hexdigest()
+        
+        if calculated_hash != sha1_hash:
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'text/plain'},
+                'body': 'Invalid signature',
+                'isBase64Encoded': False
+            }
+        
+        conn = psycopg2.connect(db_url)
+        cursor = conn.cursor()
+        
+        try:
+            if label:
+                parts = label.split('_')
+                if len(parts) >= 3:
+                    user_email = parts[0]
+                    book_id = int(parts[1])
+                    purchase_type = parts[2]
+                    
+                    cursor.execute(f'''
+                        SELECT id FROM {schema_name}.purchases 
+                        WHERE user_email = %s AND book_id = %s AND purchase_type = %s
+                    ''', (user_email, book_id, purchase_type))
+                    
+                    if not cursor.fetchone():
+                        cursor.execute(f'''
+                            INSERT INTO {schema_name}.purchases (user_email, book_id, purchase_type, price, payment_id)
+                            VALUES (%s, %s, %s, %s, %s)
+                        ''', (user_email, book_id, purchase_type, float(amount), operation_id))
+                        
+                        conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'text/plain'},
+                'body': 'OK',
+                'isBase64Encoded': False
+            }
+            
+        finally:
+            cursor.close()
+            conn.close()
+    
+    if '/yoomoney-form' in path and method == 'GET':
+        params = event.get('queryStringParameters') or {}
+        book_id = params.get('bookId')
+        user_email = params.get('userEmail')
+        purchase_type = params.get('purchaseType', 'download')
+        amount = params.get('amount')
+        
+        if not all([book_id, user_email, amount, wallet_id]):
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'Missing required parameters'}),
+                'isBase64Encoded': False
+            }
+        
+        label = f"{user_email}_{book_id}_{purchase_type}"
+        
+        payment_data = {
+            'receiver': wallet_id,
+            'quickpay_form': 'shop',
+            'targets': f'Оплата книги #{book_id}',
+            'paymentType': 'AC',
+            'sum': amount,
+            'label': label,
+            'successURL': f'https://pulsebook.ru/payment-success?bookId={book_id}',
+            'formUrl': 'https://yoomoney.ru/quickpay/confirm.xml'
+        }
+        
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps(payment_data),
+            'isBase64Encoded': False
+        }
+    
+    conn = psycopg2.connect(db_url)
+    cursor = conn.cursor()
     
     try:
         if method == 'GET':
