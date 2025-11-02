@@ -123,7 +123,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'sum': amount,
             'label': label,
             'successURL': f'https://pulsebook.ru/payment-success?bookId={book_id}',
-            'formUrl': 'https://yoomoney.ru/quickpay/confirm.xml'
+            'formUrl': 'https://yoomoney.ru/quickpay/confirm'
         }
         
         return {
