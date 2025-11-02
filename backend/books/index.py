@@ -250,7 +250,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             else:
                 cursor.execute(f'''
                     SELECT id, title, author, genre, rating, price, discount_price, cover, description, 
-                           badges, ebook_text, ebook_price, ebook_discount_price, is_adult_content
+                           badges, ebook_price, ebook_discount_price, is_adult_content
                     FROM {schema_name}.books ORDER BY created_at DESC
                 ''')
                 rows = cursor.fetchall()
@@ -271,10 +271,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'cover': row[7],
                         'description': row[8],
                         'badges': row[9] or [],
-                        'ebookText': row[10],
-                        'ebookPrice': float(row[11]) if row[11] else None,
-                        'ebookDiscountPrice': float(row[12]) if row[12] else None,
-                        'isAdultContent': row[13],
+                        'ebookPrice': float(row[10]) if row[10] else None,
+                        'ebookDiscountPrice': float(row[11]) if row[11] else None,
+                        'isAdultContent': row[12],
                         'formats': formats
                     })
                 
