@@ -29,6 +29,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(db_url)
     cursor = conn.cursor()
     
+    schema_name = 't_p48697888_litres_site_creation'
+    
     try:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
@@ -36,21 +38,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             stats = params.get('stats')
             
             if stats == 'true':
-                cursor.execute('SELECT COUNT(*) FROM books')
+                cursor.execute(f'SELECT COUNT(*) FROM {schema_name}.books')
                 books_count = cursor.fetchone()[0]
                 
-                cursor.execute('SELECT COUNT(*) FROM purchases')
+                cursor.execute(f'SELECT COUNT(*) FROM {schema_name}.purchases')
                 purchases_count = cursor.fetchone()[0]
                 
-                cursor.execute('SELECT COALESCE(SUM(price), 0) FROM purchases')
+                cursor.execute(f'SELECT COALESCE(SUM(price), 0) FROM {schema_name}.purchases')
                 total_revenue = float(cursor.fetchone()[0])
                 
-                cursor.execute('''
+                cursor.execute(f'''
                     SELECT 
                         DATE(purchased_at) as date,
                         COUNT(*) as count,
                         COALESCE(SUM(price), 0) as revenue
-                    FROM purchases
+                    FROM {schema_name}.purchases
                     WHERE purchased_at >= CURRENT_DATE - INTERVAL '30 days'
                     GROUP BY DATE(purchased_at)
                     ORDER BY date ASC
@@ -64,12 +66,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'revenue': float(row[2])
                     })
                 
-                cursor.execute('''
+                cursor.execute(f'''
                     SELECT 
                         DATE_TRUNC('week', purchased_at) as week,
                         COUNT(*) as count,
                         COALESCE(SUM(price), 0) as revenue
-                    FROM purchases
+                    FROM {schema_name}.purchases
                     WHERE purchased_at >= CURRENT_DATE - INTERVAL '12 weeks'
                     GROUP BY week
                     ORDER BY week ASC
@@ -97,10 +99,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             if book_id:
-                cursor.execute('''
+                cursor.execute(f'''
                     SELECT id, title, author, genre, rating, price, discount_price, cover, description, 
                            badges, ebook_text, ebook_price, ebook_discount_price, is_adult_content
-                    FROM books WHERE id = %s
+                    FROM {schema_name}.books WHERE id = %s
                 ''', (book_id,))
                 row = cursor.fetchone()
                 
@@ -112,7 +114,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cursor.execute('SELECT format, file_url FROM book_formats WHERE book_id = %s', (book_id,))
+                cursor.execute(f'SELECT format, file_url FROM {schema_name}.book_formats WHERE book_id = %s', (book_id,))
                 formats = [{'format': f[0], 'fileUrl': f[1]} for f in cursor.fetchall()]
                 
                 book = {
@@ -140,16 +142,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             else:
-                cursor.execute('''
+                cursor.execute(f'''
                     SELECT id, title, author, genre, rating, price, discount_price, cover, description, 
                            badges, ebook_text, ebook_price, ebook_discount_price, is_adult_content
-                    FROM books ORDER BY created_at DESC
+                    FROM {schema_name}.books ORDER BY created_at DESC
                 ''')
                 rows = cursor.fetchall()
                 
                 books = []
                 for row in rows:
-                    cursor.execute('SELECT format, file_url FROM book_formats WHERE book_id = %s', (row[0],))
+                    cursor.execute(f'SELECT format, file_url FROM {schema_name}.book_formats WHERE book_id = %s', (row[0],))
                     formats = [{'format': f[0], 'fileUrl': f[1]} for f in cursor.fetchall()]
                     
                     books.append({
@@ -180,8 +182,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'POST':
             body_data = json.loads(event.get('body', '{}'))
             
-            cursor.execute('''
-                INSERT INTO books (title, author, genre, rating, price, discount_price, cover, description, 
+            cursor.execute(f'''
+                INSERT INTO {schema_name}.books (title, author, genre, rating, price, discount_price, cover, description, 
                                  badges, ebook_text, ebook_price, ebook_discount_price, is_adult_content)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
@@ -204,8 +206,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             book_id = cursor.fetchone()[0]
             
             for fmt in body_data.get('formats', []):
-                cursor.execute('''
-                    INSERT INTO book_formats (book_id, format, file_url)
+                cursor.execute(f'''
+                    INSERT INTO {schema_name}.book_formats (book_id, format, file_url)
                     VALUES (%s, %s, %s)
                 ''', (book_id, fmt['format'], fmt['fileUrl']))
             
@@ -230,8 +232,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute('''
-                UPDATE books 
+            cursor.execute(f'''
+                UPDATE {schema_name}.books 
                 SET title = %s, author = %s, genre = %s, rating = %s, price = %s, discount_price = %s,
                     cover = %s, description = %s, badges = %s, ebook_text = %s,
                     ebook_price = %s, ebook_discount_price = %s, is_adult_content = %s, updated_at = CURRENT_TIMESTAMP
@@ -253,11 +255,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 book_id
             ))
             
-            cursor.execute('DELETE FROM book_formats WHERE book_id = %s', (book_id,))
+            cursor.execute(f'DELETE FROM {schema_name}.book_formats WHERE book_id = %s', (book_id,))
             
             for fmt in body_data.get('formats', []):
-                cursor.execute('''
-                    INSERT INTO book_formats (book_id, format, file_url)
+                cursor.execute(f'''
+                    INSERT INTO {schema_name}.book_formats (book_id, format, file_url)
                     VALUES (%s, %s, %s)
                 ''', (book_id, fmt['format'], fmt['fileUrl']))
             
@@ -282,8 +284,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute('DELETE FROM book_formats WHERE book_id = %s', (book_id,))
-            cursor.execute('DELETE FROM books WHERE id = %s', (book_id,))
+            cursor.execute(f'DELETE FROM {schema_name}.book_formats WHERE book_id = %s', (book_id,))
+            cursor.execute(f'DELETE FROM {schema_name}.books WHERE id = %s', (book_id,))
             conn.commit()
             
             return {
@@ -306,11 +308,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cursor.execute('''
+                cursor.execute(f'''
                     SELECT p.id, p.book_id, p.purchase_type, p.price, p.purchased_at,
                            b.title, b.author, b.cover, b.genre
-                    FROM purchases p
-                    JOIN books b ON p.book_id = b.id
+                    FROM {schema_name}.purchases p
+                    JOIN {schema_name}.books b ON p.book_id = b.id
                     WHERE p.user_email = %s
                     ORDER BY p.purchased_at DESC
                 ''', (user_email,))
@@ -355,8 +357,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 purchase_type = body_data.get('purchaseType', 'download')
                 price = body_data.get('price', 0)
                 
-                cursor.execute('''
-                    SELECT id FROM purchases 
+                cursor.execute(f'''
+                    SELECT id FROM {schema_name}.purchases 
                     WHERE user_email = %s AND book_id = %s AND purchase_type = %s
                 ''', (user_email, book_id, purchase_type))
                 
@@ -368,8 +370,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cursor.execute('''
-                    INSERT INTO purchases (user_email, book_id, purchase_type, price)
+                cursor.execute(f'''
+                    INSERT INTO {schema_name}.purchases (user_email, book_id, purchase_type, price)
                     VALUES (%s, %s, %s, %s)
                     RETURNING id
                 ''', (user_email, book_id, purchase_type, price))

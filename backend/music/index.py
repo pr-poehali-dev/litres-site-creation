@@ -28,13 +28,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(db_url)
     cursor = conn.cursor()
     
+    schema_name = 't_p48697888_litres_site_creation'
+    
     try:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             stats = params.get('stats')
             
             if stats == 'true':
-                cursor.execute('SELECT COUNT(*) FROM music_tracks')
+                cursor.execute(f'SELECT COUNT(*) FROM {schema_name}.music_tracks')
                 tracks_count = cursor.fetchone()[0]
                 
                 return {
@@ -44,9 +46,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute('''
+            cursor.execute(f'''
                 SELECT id, title, artist, duration, cover, audio_url, is_adult_content, genre, year, price
-                FROM music_tracks ORDER BY created_at DESC
+                FROM {schema_name}.music_tracks ORDER BY created_at DESC
             ''')
             
             rows = cursor.fetchall()
@@ -86,7 +88,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             price = int(body_data.get('price', 0)) if body_data.get('price') is not None else 0
             
             cursor.execute(f'''
-                INSERT INTO music_tracks (title, artist, duration, cover, audio_url, is_adult_content, genre, year, price)
+                INSERT INTO {schema_name}.music_tracks (title, artist, duration, cover, audio_url, is_adult_content, genre, year, price)
                 VALUES ('{title}', '{artist}', '{duration}', '{cover}', '{audio_url}', {is_adult}, '{genre}', {year}, {price})
                 RETURNING id
             ''')
@@ -124,7 +126,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             price = int(body_data.get('price', 0)) if body_data.get('price') is not None else 0
             
             cursor.execute(f'''
-                UPDATE music_tracks 
+                UPDATE {schema_name}.music_tracks 
                 SET title = '{title}', 
                     artist = '{artist}', 
                     duration = '{duration}', 
@@ -157,7 +159,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute(f'DELETE FROM music_tracks WHERE id = {int(track_id)}')
+            cursor.execute(f'DELETE FROM {schema_name}.music_tracks WHERE id = {int(track_id)}')
             conn.commit()
             
             return {

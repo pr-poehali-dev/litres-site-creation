@@ -28,6 +28,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(db_url)
     cursor = conn.cursor()
     
+    schema_name = 't_p48697888_litres_site_creation'
+    
     try:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
@@ -37,7 +39,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             stats = params.get('stats')
             
             if stats == 'true':
-                cursor.execute('SELECT COUNT(*) FROM users')
+                cursor.execute(f'SELECT COUNT(*) FROM {schema_name}.users')
                 users_count = cursor.fetchone()[0]
                 
                 return {
@@ -48,9 +50,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             if all_users == 'true':
-                cursor.execute('''
+                cursor.execute(f'''
                     SELECT id, email, name, is_admin, created_at
-                    FROM users ORDER BY created_at DESC
+                    FROM {schema_name}.users ORDER BY created_at DESC
                 ''')
                 
                 rows = cursor.fetchall()
@@ -79,9 +81,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute('''
+            cursor.execute(f'''
                 SELECT id, email, name, is_admin, created_at, password_hash
-                FROM users WHERE email = %s
+                FROM {schema_name}.users WHERE email = %s
             ''', (email,))
             
             row = cursor.fetchone()
@@ -132,7 +134,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute('SELECT id, email, name, is_admin FROM users WHERE email = %s', (email,))
+            cursor.execute(f'SELECT id, email, name, is_admin FROM {schema_name}.users WHERE email = %s', (email,))
             existing_user = cursor.fetchone()
             
             if existing_user:
@@ -149,8 +151,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cursor.execute('''
-                INSERT INTO users (email, name, is_admin)
+            cursor.execute(f'''
+                INSERT INTO {schema_name}.users (email, name, is_admin)
                 VALUES (%s, %s, %s)
                 RETURNING id, email, name, is_admin, created_at
             ''', (email, name, False))
