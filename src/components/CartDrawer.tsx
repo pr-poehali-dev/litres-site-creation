@@ -51,8 +51,9 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
   }, [useBonus, bonusBalance, totalAmount, canUseBonus]);
 
   const finalAmount = totalAmount - bonusToUse;
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!isAuthenticated) {
       onOpenChange(false);
       onAuthRequired();
@@ -68,68 +69,120 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
       return;
     }
 
-    const purchaseItems = cart.map(item => ({
-      bookId: item.id,
-      title: item.title,
-      author: item.author,
-      price: item.price,
-      cover: item.cover,
-    }));
+    if (finalAmount <= 0) {
+      const purchaseItems = cart.map(item => ({
+        bookId: item.id,
+        title: item.title,
+        author: item.author,
+        price: item.price,
+        cover: item.cover,
+      }));
 
-    addPurchase(user!.id, purchaseItems);
+      addPurchase(user!.id, purchaseItems);
 
-    const userBonusData = localStorage.getItem(`bonusCard_${user!.email}`);
-    const bonusData = userBonusData ? JSON.parse(userBonusData) : { balance: 0, cardNumber: '', transactions: [] };
+      const userBonusData = localStorage.getItem(`bonusCard_${user!.email}`);
+      const bonusData = userBonusData ? JSON.parse(userBonusData) : { balance: 0, cardNumber: '', transactions: [] };
 
-    let newBalance = bonusData.balance || 0;
-    const transactions = bonusData.transactions || [];
+      let newBalance = bonusData.balance || 0;
+      const transactions = bonusData.transactions || [];
 
-    if (useBonus && bonusToUse > 0) {
-      newBalance -= bonusToUse;
-      transactions.push({
-        id: Date.now().toString() + '-spend',
-        date: new Date().toISOString(),
-        type: 'spend',
-        amount: bonusToUse,
-        description: `Оплата заказа (${itemCount} ${itemCount === 1 ? 'книга' : itemCount < 5 ? 'книги' : 'книг'})`,
+      if (useBonus && bonusToUse > 0) {
+        newBalance -= bonusToUse;
+        transactions.push({
+          id: Date.now().toString() + '-spend',
+          date: new Date().toISOString(),
+          type: 'spend',
+          amount: bonusToUse,
+          description: `Оплата заказа (${itemCount} ${itemCount === 1 ? 'книга' : itemCount < 5 ? 'книги' : 'книг'})`,
+        });
+      }
+
+      bonusData.balance = newBalance;
+      bonusData.transactions = transactions;
+      localStorage.setItem(`bonusCard_${user!.email}`, JSON.stringify(bonusData));
+
+      clearCart();
+
+      toast({
+        title: 'Покупка оформлена!',
+        description: `Вы успешно приобрели ${itemCount} ${itemCount === 1 ? 'книгу' : itemCount < 5 ? 'книги' : 'книг'} бонусами`,
       });
+
+      setUseBonus(false);
+      setBonusToUse(0);
+      onOpenChange(false);
+      navigate('/profile');
+      return;
     }
 
-    const earnedBonus = cart.reduce((sum, item) => sum + (item.bonusAmount || 0), 0);
-    if (earnedBonus > 0) {
-      newBalance += earnedBonus;
-      transactions.push({
-        id: Date.now().toString() + '-earn',
-        date: new Date().toISOString(),
-        type: 'earn',
-        amount: earnedBonus,
-        description: `Бонус за покупку (${itemCount} ${itemCount === 1 ? 'книга' : itemCount < 5 ? 'книги' : 'книг'})`,
+    setIsPaymentLoading(true);
+
+    try {
+      const funcUrls = await import('../../backend/func2url.json');
+      const bookIds = cart.map(item => item.id).join(',');
+      const label = `${user!.email}_cart_${Date.now()}`;
+
+      const response = await fetch(
+        `${funcUrls.books}/yoomoney-form?bookId=${bookIds}&userEmail=${user!.email}&amount=${finalAmount}&purchaseType=cart&label=${label}`
+      );
+
+      const data = await response.json();
+
+      if (data.error) {
+        toast({
+          title: 'Ошибка оплаты',
+          description: data.error,
+          variant: 'destructive',
+        });
+        setIsPaymentLoading(false);
+        return;
+      }
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = data.formUrl;
+      form.target = '_blank';
+
+      const fields = {
+        receiver: data.receiver,
+        'quickpay-form': data.quickpay_form,
+        targets: data.targets,
+        paymentType: data.paymentType,
+        sum: data.sum,
+        label: data.label,
+        successURL: data.successURL
+      };
+
+      Object.entries(fields).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value as string;
+        form.appendChild(input);
       });
+
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+
+      toast({
+        title: 'Перенаправление на оплату',
+        description: 'Откроется страница ЮMoney для завершения платежа',
+      });
+
+      setTimeout(() => {
+        setIsPaymentLoading(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось создать платеж',
+        variant: 'destructive',
+      });
+      setIsPaymentLoading(false);
     }
-
-    bonusData.balance = newBalance;
-    bonusData.transactions = transactions;
-    localStorage.setItem(`bonusCard_${user!.email}`, JSON.stringify(bonusData));
-
-    clearCart();
-    
-    const bonusMessages = [];
-    if (useBonus && bonusToUse > 0) {
-      bonusMessages.push(`Списано ${bonusToUse} ₽ бонусов`);
-    }
-    if (earnedBonus > 0) {
-      bonusMessages.push(`Начислено ${earnedBonus} ₽ бонусов`);
-    }
-
-    toast({
-      title: 'Покупка оформлена!',
-      description: `Вы успешно приобрели ${itemCount} ${itemCount === 1 ? 'книгу' : itemCount < 5 ? 'книги' : 'книг'} на сумму ${finalAmount} ₽${bonusMessages.length > 0 ? '. ' + bonusMessages.join('. ') : ''}`,
-    });
-
-    setUseBonus(false);
-    setBonusToUse(0);
-    onOpenChange(false);
-    navigate('/profile');
   };
 
   return (
@@ -264,9 +317,19 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
                   className="w-full" 
                   size="lg"
                   onClick={handleCheckout}
+                  disabled={isPaymentLoading}
                 >
-                  <Icon name="CreditCard" size={20} className="mr-2" />
-                  Оформить заказ
+                  {isPaymentLoading ? (
+                    <>
+                      <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                      Загрузка...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="CreditCard" size={20} className="mr-2" />
+                      {finalAmount > 0 ? 'Оплатить через ЮMoney' : 'Оформить заказ'}
+                    </>
+                  )}
                 </Button>
                 <Button 
                   variant="outline" 
