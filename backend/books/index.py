@@ -13,6 +13,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     path: str = event.get('path', '')
     
+    
     if method == 'OPTIONS':
         return {
             'statusCode': 200,
@@ -256,8 +257,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 books = []
                 for row in rows:
-                    cursor.execute(f'SELECT format, file_url FROM {schema_name}.book_formats WHERE book_id = %s', (row[0],))
-                    formats = [{'format': f[0], 'fileUrl': f[1]} for f in cursor.fetchall()]
+                    cursor.execute(f'SELECT format FROM {schema_name}.book_formats WHERE book_id = %s', (row[0],))
+                    formats = [{'format': f[0], 'fileUrl': ''} for f in cursor.fetchall()]
                     
                     books.append({
                         'id': row[0],
