@@ -32,6 +32,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             email = params.get('email')
+            password = params.get('password')
             all_users = params.get('all')
             stats = params.get('stats')
             
@@ -79,7 +80,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cursor.execute('''
-                SELECT id, email, name, is_admin, created_at
+                SELECT id, email, name, is_admin, created_at, password_hash
                 FROM users WHERE email = %s
             ''', (email,))
             
@@ -92,6 +93,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'User not found'}),
                     'isBase64Encoded': False
                 }
+            
+            if password:
+                stored_password = row[5]
+                if stored_password and password != stored_password:
+                    return {
+                        'statusCode': 401,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Invalid password'}),
+                        'isBase64Encoded': False
+                    }
             
             user = {
                 'id': row[0],

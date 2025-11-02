@@ -31,11 +31,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${funcUrls.auth}?email=${encodeURIComponent(email)}`);
+      const response = await fetch(`${funcUrls.auth}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
       const data = await response.json();
       
       if (response.ok && data.user) {
-        const isAdmin = data.user.email === 'swi79@bk.ru';
+        const isAdmin = data.user.isAdmin || data.user.email === 'swi79@bk.ru';
         const userData = {
           id: data.user.id.toString(),
           email: data.user.email,
