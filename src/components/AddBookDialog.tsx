@@ -221,13 +221,15 @@ export const AddBookDialog = ({ open, onOpenChange, bookToEdit }: AddBookDialogP
       };
 
       if (bookToEdit) {
-        updateBook(bookToEdit.id, bookData);
+        await updateBook(bookToEdit.id, bookData);
         toast({
           title: 'Книга обновлена!',
           description: `${title} успешно обновлена`,
         });
       } else {
-        addBook(bookData);
+        console.log('Добавление книги:', bookData);
+        await addBook(bookData);
+        console.log('Книга успешно добавлена');
         toast({
           title: 'Книга добавлена!',
           description: `${title} успешно добавлена в каталог`,

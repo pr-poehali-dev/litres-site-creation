@@ -49,8 +49,10 @@ export const BookProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchBooks = async () => {
     try {
+      console.log('Загрузка книг с сервера...');
       const response = await fetch(funcUrls.books);
       const data = await response.json();
+      console.log('Получено книг с сервера:', data.books?.length || 0);
       setBooks(data.books || []);
     } catch (error) {
       console.error('Failed to fetch books:', error);
@@ -65,13 +67,17 @@ export const BookProvider = ({ children }: { children: ReactNode }) => {
 
   const addBook = async (book: Omit<Book, 'id'>) => {
     try {
+      console.log('Отправка книги на сервер:', book.title);
       const response = await fetch(funcUrls.books, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(book)
       });
       const data = await response.json();
+      console.log('Ответ сервера:', data);
+      console.log('Обновление списка книг...');
       await fetchBooks();
+      console.log('Список книг обновлен, всего книг:', books.length);
     } catch (error) {
       console.error('Failed to add book:', error);
     }
