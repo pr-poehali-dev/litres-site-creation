@@ -28,13 +28,23 @@ export const YooMoneyPayment = ({ book, purchaseType = 'download', onSuccess }: 
         ? book.ebookPrice 
         : book.discountPrice || book.price;
 
-      const response = await fetch(
-        `${funcUrls.books}/yoomoney-form?bookId=${book.id}&userEmail=${user.email}&amount=${price}&purchaseType=${purchaseType}`
-      );
+      const url = `${funcUrls.books}/yoomoney-form?bookId=${book.id}&userEmail=${user.email}&amount=${price}&purchaseType=${purchaseType}`;
+      console.log('Requesting payment data:', url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error('Response not OK:', response.status, response.statusText);
+        alert(`Ошибка сервера: ${response.status}`);
+        setLoading(false);
+        return;
+      }
       
       const data = await response.json();
+      console.log('Payment data received:', data);
 
       if (data.error) {
+        console.error('Payment data error:', data.error);
         alert('Ошибка создания платежа: ' + data.error);
         setLoading(false);
         return;
@@ -53,6 +63,8 @@ export const YooMoneyPayment = ({ book, purchaseType = 'download', onSuccess }: 
         label: data.label,
         successURL: data.successURL
       };
+
+      console.log('Submitting form with fields:', fields);
 
       Object.entries(fields).forEach(([key, value]) => {
         const input = document.createElement('input');
