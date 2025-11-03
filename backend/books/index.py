@@ -114,16 +114,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
-        label = f"{user_email}_{book_id}_{purchase_type}"
+        label = params.get('label', f"{user_email}_{book_id}_{purchase_type}")
+        
+        if purchase_type == 'cart' or ',' in book_id:
+            success_url = 'https://pulsebook.ru/my-books'
+            targets = f'Оплата заказа'
+        else:
+            success_url = f'https://pulsebook.ru/payment-success?bookId={book_id}'
+            targets = f'Оплата книги #{book_id}'
         
         payment_data = {
             'receiver': wallet_id,
             'quickpay_form': 'shop',
-            'targets': f'Оплата книги #{book_id}',
+            'targets': targets,
             'paymentType': 'AC',
             'sum': amount,
             'label': label,
-            'successURL': f'https://pulsebook.ru/payment-success?bookId={book_id}',
+            'successURL': success_url,
             'formUrl': 'https://yoomoney.ru/quickpay/confirm'
         }
         
