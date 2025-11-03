@@ -163,6 +163,106 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cursor = conn.cursor()
     
     try:
+        if '/purchases' in path and method == 'GET':
+            headers = event.get('headers', {})
+            user_email = headers.get('x-user-email') or headers.get('X-User-Email')
+            
+            if not user_email:
+                cursor.close()
+                conn.close()
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'User email required'}),
+                    'isBase64Encoded': False
+                }
+            
+            cursor.execute(f'''
+                SELECT p.id, p.book_id, p.purchase_type, p.price, p.purchased_at,
+                       b.title, b.author, b.cover, b.genre
+                FROM {schema_name}.purchases p
+                JOIN {schema_name}.books b ON p.book_id = b.id
+                WHERE p.user_email = %s
+                ORDER BY p.purchased_at DESC
+            ''', (user_email,))
+            
+            purchases = []
+            for row in cursor.fetchall():
+                purchases.append({
+                    'id': row[0],
+                    'bookId': row[1],
+                    'purchaseType': row[2],
+                    'price': float(row[3]),
+                    'purchasedAt': row[4].isoformat(),
+                    'book': {
+                        'title': row[5],
+                        'author': row[6],
+                        'cover': row[7],
+                        'genre': row[8]
+                    }
+                })
+            
+            cursor.close()
+            conn.close()
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'purchases': purchases}),
+                'isBase64Encoded': False
+            }
+        
+        if '/purchases' in path and method == 'POST':
+            body_data = json.loads(event.get('body', '{}'))
+            headers = event.get('headers', {})
+            user_email = headers.get('x-user-email') or headers.get('X-User-Email')
+            
+            if not user_email:
+                cursor.close()
+                conn.close()
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'User email required'}),
+                    'isBase64Encoded': False
+                }
+            
+            book_id = body_data.get('bookId')
+            purchase_type = body_data.get('purchaseType', 'download')
+            price = body_data.get('price', 0)
+            
+            cursor.execute(f'''
+                SELECT id FROM {schema_name}.purchases 
+                WHERE user_email = %s AND book_id = %s AND purchase_type = %s
+            ''', (user_email, book_id, purchase_type))
+            
+            if cursor.fetchone():
+                cursor.close()
+                conn.close()
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Already purchased'}),
+                    'isBase64Encoded': False
+                }
+            
+            cursor.execute(f'''
+                INSERT INTO {schema_name}.purchases (user_email, book_id, purchase_type, price)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            ''', (user_email, book_id, purchase_type, price))
+            
+            purchase_id = cursor.fetchone()[0]
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            return {
+                'statusCode': 201,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'id': purchase_id, 'message': 'Purchase created'}),
+                'isBase64Encoded': False
+            }
+        
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             book_id = params.get('id')
@@ -425,97 +525,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
-        if '/purchases' in event.get('path', ''):
-            if method == 'GET':
-                headers = event.get('headers', {})
-                user_email = headers.get('x-user-email') or headers.get('X-User-Email')
-                
-                if not user_email:
-                    return {
-                        'statusCode': 400,
-                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'User email required'}),
-                        'isBase64Encoded': False
-                    }
-                
-                cursor.execute(f'''
-                    SELECT p.id, p.book_id, p.purchase_type, p.price, p.purchased_at,
-                           b.title, b.author, b.cover, b.genre
-                    FROM {schema_name}.purchases p
-                    JOIN {schema_name}.books b ON p.book_id = b.id
-                    WHERE p.user_email = %s
-                    ORDER BY p.purchased_at DESC
-                ''', (user_email,))
-                
-                purchases = []
-                for row in cursor.fetchall():
-                    purchases.append({
-                        'id': row[0],
-                        'bookId': row[1],
-                        'purchaseType': row[2],
-                        'price': float(row[3]),
-                        'purchasedAt': row[4].isoformat(),
-                        'book': {
-                            'title': row[5],
-                            'author': row[6],
-                            'cover': row[7],
-                            'genre': row[8]
-                        }
-                    })
-                
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'purchases': purchases}),
-                    'isBase64Encoded': False
-                }
-            
-            elif method == 'POST':
-                body_data = json.loads(event.get('body', '{}'))
-                headers = event.get('headers', {})
-                user_email = headers.get('x-user-email') or headers.get('X-User-Email')
-                
-                if not user_email:
-                    return {
-                        'statusCode': 400,
-                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'User email required'}),
-                        'isBase64Encoded': False
-                    }
-                
-                book_id = body_data.get('bookId')
-                purchase_type = body_data.get('purchaseType', 'download')
-                price = body_data.get('price', 0)
-                
-                cursor.execute(f'''
-                    SELECT id FROM {schema_name}.purchases 
-                    WHERE user_email = %s AND book_id = %s AND purchase_type = %s
-                ''', (user_email, book_id, purchase_type))
-                
-                if cursor.fetchone():
-                    return {
-                        'statusCode': 400,
-                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Already purchased'}),
-                        'isBase64Encoded': False
-                    }
-                
-                cursor.execute(f'''
-                    INSERT INTO {schema_name}.purchases (user_email, book_id, purchase_type, price)
-                    VALUES (%s, %s, %s, %s)
-                    RETURNING id
-                ''', (user_email, book_id, purchase_type, price))
-                
-                purchase_id = cursor.fetchone()[0]
-                conn.commit()
-                
-                return {
-                    'statusCode': 201,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'id': purchase_id, 'message': 'Purchase created'}),
-                    'isBase64Encoded': False
-                }
-        
+
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
