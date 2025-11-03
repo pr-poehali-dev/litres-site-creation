@@ -43,7 +43,6 @@ export const YooMoneyPayment = ({ book, purchaseType = 'download', onSuccess }: 
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = data.formUrl;
-      form.target = '_blank';
 
       const fields = {
         receiver: data.receiver,
