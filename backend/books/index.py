@@ -130,11 +130,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         label = params.get('label', f"{user_email}_{book_id}_{purchase_type}")
         
+        headers = event.get('headers', {})
+        origin = headers.get('origin') or headers.get('Origin') or headers.get('referer') or headers.get('Referer') or 'https://preview--litres-site-creation.poehali.dev'
+        base_url = origin.rstrip('/')
+        
         if purchase_type == 'cart' or ',' in book_id:
-            success_url = 'https://pulsebook.ru/my-books'
+            success_url = f'{base_url}/my-books'
             targets = f'Оплата заказа'
         else:
-            success_url = f'https://pulsebook.ru/payment-success?bookId={book_id}'
+            success_url = f'{base_url}/payment-success?bookId={book_id}'
             targets = f'Оплата книги #{book_id}'
         
         payment_data = {
