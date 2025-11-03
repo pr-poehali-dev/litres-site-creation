@@ -106,19 +106,25 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         purchase_type = params.get('purchaseType', 'download')
         amount = params.get('amount')
         
+        print(f'YooMoney form request: bookId={book_id}, userEmail={user_email}, amount={amount}, wallet_id={wallet_id}')
+        
         if not wallet_id:
+            error_msg = 'YOOMONEY_WALLET_ID не установлен. Добавьте секрет в настройках проекта.'
+            print(f'ERROR: {error_msg}')
             return {
                 'statusCode': 400,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'YOOMONEY_WALLET_ID не установлен. Добавьте секрет в настройках проекта.'}),
+                'body': json.dumps({'error': error_msg}),
                 'isBase64Encoded': False
             }
         
         if not all([book_id, user_email, amount]):
+            error_msg = f'Отсутствуют параметры: bookId={book_id}, userEmail={user_email}, amount={amount}'
+            print(f'ERROR: {error_msg}')
             return {
                 'statusCode': 400,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': f'Отсутствуют параметры: bookId={book_id}, userEmail={user_email}, amount={amount}'}),
+                'body': json.dumps({'error': error_msg}),
                 'isBase64Encoded': False
             }
         

@@ -121,12 +121,16 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
       const funcUrls = await import('../../backend/func2url.json');
       const bookIds = cart.map(item => item.id).join(',');
       const label = `${user!.email}_cart_${Date.now()}`;
+      
+      const requestUrl = `${funcUrls.books}/yoomoney-form?bookId=${bookIds}&userEmail=${user!.email}&amount=${finalAmount}&purchaseType=cart&label=${label}`;
+      console.log('YooMoney запрос:', requestUrl);
 
-      const response = await fetch(
-        `${funcUrls.books}/yoomoney-form?bookId=${bookIds}&userEmail=${user!.email}&amount=${finalAmount}&purchaseType=cart&label=${label}`
-      );
+      const response = await fetch(requestUrl);
+      
+      console.log('YooMoney статус ответа:', response.status);
 
       const data = await response.json();
+      console.log('YooMoney данные:', data);
 
       if (data.error) {
         toast({
