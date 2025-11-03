@@ -106,11 +106,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         purchase_type = params.get('purchaseType', 'download')
         amount = params.get('amount')
         
-        if not all([book_id, user_email, amount, wallet_id]):
+        if not wallet_id:
             return {
                 'statusCode': 400,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Missing required parameters'}),
+                'body': json.dumps({'error': 'YOOMONEY_WALLET_ID не установлен. Добавьте секрет в настройках проекта.'}),
+                'isBase64Encoded': False
+            }
+        
+        if not all([book_id, user_email, amount]):
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': f'Отсутствуют параметры: bookId={book_id}, userEmail={user_email}, amount={amount}'}),
                 'isBase64Encoded': False
             }
         
