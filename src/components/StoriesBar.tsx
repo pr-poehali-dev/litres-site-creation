@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import funcUrls from '../../func2url.json';
+import funcUrls from '../../backend/func2url.json';
 
 interface Story {
   id: number;

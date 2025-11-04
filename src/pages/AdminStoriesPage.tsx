@@ -3,7 +3,7 @@ import { Plus, Trash2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import funcUrls from '../../func2url.json';
+import funcUrls from '../../backend/func2url.json';
 
 interface Story {
   id: number;
