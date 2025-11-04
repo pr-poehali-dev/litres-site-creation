@@ -118,7 +118,8 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
     setIsPaymentLoading(true);
 
     try {
-      const funcUrls = await import('../../backend/func2url.json');
+      const funcUrlsModule = await import('../../backend/func2url.json');
+      const funcUrls = funcUrlsModule.default;
       const bookIds = cart.map(item => item.id).join(',');
       const label = `${user!.email}_cart_${Date.now()}`;
       
@@ -145,7 +146,6 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = data.formUrl;
-      form.target = '_blank';
 
       const fields = {
         receiver: data.receiver,
@@ -167,7 +167,6 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
 
       document.body.appendChild(form);
       form.submit();
-      document.body.removeChild(form);
 
       toast({
         title: 'Перенаправление на оплату',
