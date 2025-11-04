@@ -13,6 +13,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     path: str = event.get('path', '')
     
+    print(f'DEBUG: method={method}, path={path}, event keys={list(event.keys())}')
+    
     
     if method == 'OPTIONS':
         return {
@@ -99,8 +101,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cursor.close()
             conn.close()
     
-    if '/yoomoney-form' in path and method == 'GET':
-        params = event.get('queryStringParameters') or {}
+    params = event.get('queryStringParameters') or {}
+    action = params.get('action')
+    
+    if (action == 'yoomoney-form' or '/yoomoney-form' in path) and method == 'GET':
         book_id = params.get('bookId')
         user_email = params.get('userEmail')
         purchase_type = params.get('purchaseType', 'download')

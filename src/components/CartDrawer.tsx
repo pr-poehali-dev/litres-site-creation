@@ -123,7 +123,7 @@ export const CartDrawer = ({ open, onOpenChange, onAuthRequired }: CartDrawerPro
       const bookIds = cart.map(item => item.id).join(',');
       const label = `${user!.email}_cart_${Date.now()}`;
       
-      const requestUrl = `${funcUrls.books}/yoomoney-form?bookId=${bookIds}&userEmail=${user!.email}&amount=${finalAmount}&purchaseType=cart&label=${label}`;
+      const requestUrl = `${funcUrls.books}?action=yoomoney-form&bookId=${bookIds}&userEmail=${user!.email}&amount=${finalAmount}&purchaseType=cart&label=${label}`;
       console.log('YooMoney запрос:', requestUrl);
 
       const response = await fetch(requestUrl);
