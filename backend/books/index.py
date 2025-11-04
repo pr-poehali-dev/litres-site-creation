@@ -163,6 +163,129 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
+    if action == 'stories' or '/stories' in path:
+        conn = psycopg2.connect(db_url)
+        cursor = conn.cursor()
+        
+        try:
+            if method == 'GET':
+                cursor.execute("""
+                    SELECT id, title, image_url, created_at, expires_at, is_active, views_count
+                    FROM stories
+                    WHERE is_active = true AND expires_at > NOW()
+                    ORDER BY created_at DESC
+                """)
+                
+                rows = cursor.fetchall()
+                stories = []
+                for row in rows:
+                    stories.append({
+                        'id': row[0],
+                        'title': row[1],
+                        'imageUrl': row[2],
+                        'createdAt': row[3].isoformat() if row[3] else None,
+                        'expiresAt': row[4].isoformat() if row[4] else None,
+                        'isActive': row[5],
+                        'viewsCount': row[6]
+                    })
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'stories': stories}),
+                    'isBase64Encoded': False
+                }
+            
+            elif method == 'POST':
+                headers = event.get('headers', {})
+                user_id = headers.get('x-user-id') or headers.get('X-User-Id')
+                
+                if user_id != '1':
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Только администратор может создавать Stories'}),
+                        'isBase64Encoded': False
+                    }
+                
+                from datetime import datetime, timedelta
+                body_data = json.loads(event.get('body', '{}'))
+                title = body_data.get('title')
+                image_url = body_data.get('imageUrl')
+                duration_hours = body_data.get('durationHours', 24)
+                
+                if not title or not image_url:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Укажите title и imageUrl'}),
+                        'isBase64Encoded': False
+                    }
+                
+                expires_at = datetime.now() + timedelta(hours=duration_hours)
+                
+                cursor.execute("""
+                    INSERT INTO stories (title, image_url, expires_at, is_active, views_count)
+                    VALUES (%s, %s, %s, true, 0)
+                    RETURNING id, title, image_url, created_at, expires_at, is_active, views_count
+                """, (title, image_url, expires_at))
+                
+                row = cursor.fetchone()
+                conn.commit()
+                
+                story = {
+                    'id': row[0],
+                    'title': row[1],
+                    'imageUrl': row[2],
+                    'createdAt': row[3].isoformat() if row[3] else None,
+                    'expiresAt': row[4].isoformat() if row[4] else None,
+                    'isActive': row[5],
+                    'viewsCount': row[6]
+                }
+                
+                return {
+                    'statusCode': 201,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'story': story}),
+                    'isBase64Encoded': False
+                }
+            
+            elif method == 'DELETE':
+                headers = event.get('headers', {})
+                user_id = headers.get('x-user-id') or headers.get('X-User-Id')
+                
+                if user_id != '1':
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Только администратор может удалять Stories'}),
+                        'isBase64Encoded': False
+                    }
+                
+                story_id = params.get('id')
+                
+                if not story_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Укажите id истории'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute("DELETE FROM stories WHERE id = %s", (story_id,))
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
     conn = psycopg2.connect(db_url)
     cursor = conn.cursor()
     

@@ -12,6 +12,7 @@ import { BannerCarousel } from '@/components/BannerCarousel';
 import { SearchSection } from '@/components/SearchSection';
 import { BookCard } from '@/components/BookCard';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
+import StoriesBar from '@/components/StoriesBar';
 import { useToast } from '@/hooks/use-toast';
 
 const genres = ['Все жанры', 'Классика', 'Фантастика', 'Детектив', 'Романтика', 'Сказка'];
@@ -126,6 +127,10 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         <BannerCarousel timeLeft={timeLeft} />
+
+        <div className="my-6">
+          <StoriesBar />
+        </div>
 
         <SearchSection
           searchQuery={searchQuery}

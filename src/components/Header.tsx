@@ -118,6 +118,12 @@ export const Header = ({ onAuthDialogOpen, onCartOpen, onAddBookOpen }: HeaderPr
                       Аудио реклама
                     </DropdownMenuItem>
                   )}
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin/stories')}>
+                      <Icon name="Film" size={16} className="mr-2" />
+                      Stories
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <Icon name="ShoppingBag" size={16} className="mr-2" />
                     Мои заказы

@@ -24,6 +24,7 @@ import Gold from "./pages/Gold";
 import AudioAds from "./pages/AudioAds";
 import BonusCard from "./pages/BonusCard";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import AdminStoriesPage from "./pages/AdminStoriesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
                     <Route path="/audio-ads" element={<AudioAds />} />
                     <Route path="/bonus-card" element={<BonusCard />} />
                     <Route path="/payment-success" element={<PaymentSuccess />} />
+                    <Route path="/admin/stories" element={<AdminStoriesPage />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
