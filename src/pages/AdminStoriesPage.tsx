@@ -24,6 +24,7 @@ export default function AdminStoriesPage() {
     imageUrl: '',
     durationHours: 24
   });
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   useEffect(() => {
     fetchStories();
@@ -39,6 +40,24 @@ export default function AdminStoriesPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Выберите изображение');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setImagePreview(base64String);
+      setNewStory({ ...newStory, imageUrl: base64String });
+    };
+    reader.readAsDataURL(file);
   };
 
   const createStory = async () => {
@@ -60,6 +79,7 @@ export default function AdminStoriesPage() {
 
       if (response.ok) {
         setNewStory({ title: '', imageUrl: '', durationHours: 24 });
+        setImagePreview('');
         await fetchStories();
       } else {
         const error = await response.json();
@@ -128,13 +148,23 @@ export default function AdminStoriesPage() {
             </div>
 
             <div>
-              <Label htmlFor="imageUrl">URL изображения</Label>
+              <Label htmlFor="imageFile">Изображение</Label>
               <Input
-                id="imageUrl"
-                value={newStory.imageUrl}
-                onChange={(e) => setNewStory({ ...newStory, imageUrl: e.target.value })}
-                placeholder="https://example.com/image.jpg"
+                id="imageFile"
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="cursor-pointer"
               />
+              {imagePreview && (
+                <div className="mt-3">
+                  <img
+                    src={imagePreview}
+                    alt="Превью"
+                    className="w-32 h-32 object-cover rounded-lg border"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
