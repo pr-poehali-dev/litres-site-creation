@@ -10,6 +10,7 @@ import { ExportTracksDialog } from '@/components/ExportTracksDialog';
 import { ImportTracksDialog } from '@/components/ImportTracksDialog';
 import { TrackCard } from '@/components/TrackCard';
 import { MusicPlayer } from '@/components/MusicPlayer';
+import { MusicStories } from '@/components/MusicStories';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
@@ -89,6 +90,8 @@ const Music = () => {
       />
 
       <main className="container mx-auto px-4 py-4 md:py-8 pb-32 md:pb-40">
+        <MusicStories />
+        
         <div className="mb-6 md:mb-8 animate-fade-in">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div className="flex-1 min-w-0">
