@@ -154,12 +154,16 @@ export const TrackCard = ({ track, index, onEdit, selectionMode = false, isSelec
             )}
 
             <div className="relative group/cover flex-shrink-0">
-              <div className="relative w-24 h-24 rounded-2xl overflow-hidden shadow-lg">
+              <div className="relative w-24 h-24 rounded-2xl overflow-visible shadow-lg">
                 {isCurrentTrack && isPlaying && (
-                  <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 animate-pulse" />
-                    <div className="absolute inset-0 border-4 border-primary/40 rounded-2xl animate-[ping_2s_ease-in-out_infinite]" />
-                  </div>
+                  <>
+                    <div className="absolute -inset-8 z-0">
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/40 via-secondary/40 to-accent/40 blur-md animate-music-wave-1" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-secondary/30 via-primary/30 to-primary/30 blur-lg animate-music-wave-2" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-tl from-accent/20 via-primary/20 to-secondary/20 blur-xl animate-music-wave-3" />
+                    </div>
+                    <div className="absolute inset-0 z-0 border-4 border-primary/40 rounded-2xl animate-[ping_2s_ease-in-out_infinite]" />
+                  </>
                 )}
                 
                 {track.cover ? (
