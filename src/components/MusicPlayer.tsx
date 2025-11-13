@@ -43,11 +43,22 @@ export const MusicPlayer = () => {
   };
 
   const handleTimeUpdate = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !currentTrack) return;
     const current = audioRef.current.currentTime;
     const total = audioRef.current.duration;
     setProgress((current / total) * 100);
     setCurrentTime(formatTime(current));
+
+    const isPaid = currentTrack.price && currentTrack.price > 0;
+    const freePreview = currentTrack.freePreviewSeconds || 30;
+    const purchasedTracks = JSON.parse(localStorage.getItem('purchased_tracks') || '[]');
+    const isPurchased = purchasedTracks.includes(currentTrack.id);
+
+    if (isPaid && !isPurchased && current >= freePreview) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      alert(`Бесплатный превью закончен. Купите трек "${currentTrack.title}" за ${currentTrack.price} ₽ чтобы слушать полностью.`);
+    }
   };
 
   const handleLoadedMetadata = () => {

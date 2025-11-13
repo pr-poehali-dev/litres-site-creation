@@ -13,6 +13,7 @@ interface Track {
   price?: number;
   purchasedBy?: string[];
   isAdultContent?: boolean;
+  freePreviewSeconds?: number;
 }
 
 interface MusicContextType {

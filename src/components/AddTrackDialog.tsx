@@ -25,7 +25,8 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
     genre: '',
     year: new Date().getFullYear(),
     price: 0,
-    isAdultContent: false
+    isAdultContent: false,
+    freePreviewSeconds: 30
   });
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,7 +89,8 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
         genre: '',
         year: new Date().getFullYear(),
         price: 0,
-        isAdultContent: false
+        isAdultContent: false,
+        freePreviewSeconds: 30
       });
       
       onOpenChange(false);
@@ -182,6 +184,24 @@ export const AddTrackDialog = ({ open, onOpenChange }: AddTrackDialogProps) => {
                 Укажите 0 для бесплатного трека
               </p>
             </div>
+
+            {formData.price > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="freePreview">Бесплатный превью (сек)</Label>
+                <Input
+                  id="freePreview"
+                  type="number"
+                  min="0"
+                  step="5"
+                  value={formData.freePreviewSeconds}
+                  onChange={(e) => setFormData({ ...formData, freePreviewSeconds: parseInt(e.target.value) || 0 })}
+                  placeholder="30"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Сколько секунд можно слушать бесплатно
+                </p>
+              </div>
+            )}
 
             <div className="space-y-2 flex items-center gap-2 pt-6">
               <Checkbox 
