@@ -9,6 +9,12 @@ export const MusicPlayer = () => {
   const { currentTrack, isPlaying, setIsPlaying, tracks, setCurrentTrack } = useMusic();
   const audioRef = useRef<HTMLAudioElement>(null);
   const adAudioRef = useRef<HTMLAudioElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const animationRef = useRef<number | null>(null);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(70);
   const [currentTime, setCurrentTime] = useState('0:00');
@@ -35,6 +41,70 @@ export const MusicPlayer = () => {
       }
     }
   }, [currentTrack]);
+
+  useEffect(() => {
+    if (!audioRef.current || !canvasRef.current) return;
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      analyserRef.current.fftSize = 64;
+      
+      if (!sourceRef.current) {
+        sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
+        sourceRef.current.connect(analyserRef.current);
+        analyserRef.current.connect(audioContextRef.current.destination);
+      }
+
+      const bufferLength = analyserRef.current.frequencyBinCount;
+      dataArrayRef.current = new Uint8Array(bufferLength);
+    }
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx || !analyserRef.current || !dataArrayRef.current) return;
+
+    const draw = () => {
+      if (!analyserRef.current || !dataArrayRef.current || !ctx) return;
+
+      animationRef.current = requestAnimationFrame(draw);
+
+      analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+
+      const barCount = 24;
+      const barWidth = canvas.width / barCount;
+      const gap = 2;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < barCount; i++) {
+        const dataIndex = Math.floor((i / barCount) * dataArrayRef.current.length);
+        let barHeight = (dataArrayRef.current[dataIndex] / 255) * canvas.height;
+        
+        if (!isPlaying) {
+          barHeight = Math.random() * 10 + 5;
+        }
+
+        const x = i * barWidth;
+        const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+        
+        const hue = (i / barCount) * 60 + 260;
+        gradient.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.9)`);
+        gradient.addColorStop(1, `hsla(${hue}, 80%, 55%, 0.6)`);
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x + gap / 2, canvas.height - barHeight, barWidth - gap, barHeight);
+      }
+    };
+
+    draw();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isPlaying]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -251,16 +321,27 @@ export const MusicPlayer = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
-            <span className="text-xs text-muted-foreground w-10 md:w-12 text-right flex-shrink-0">{currentTime}</span>
-            <Slider
-              value={[progress]}
-              onValueChange={handleProgressChange}
-              max={100}
-              step={0.1}
-              className="flex-1"
-            />
-            <span className="text-xs text-muted-foreground w-10 md:w-12 flex-shrink-0">{duration}</span>
+          <div className="flex flex-col gap-2">
+            <div className="relative h-16 md:h-20 w-full rounded-lg overflow-hidden bg-gradient-to-b from-primary/5 to-background border border-primary/10">
+              <canvas 
+                ref={canvasRef} 
+                width={800} 
+                height={80}
+                className="w-full h-full"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2 md:gap-3">
+              <span className="text-xs text-muted-foreground w-10 md:w-12 text-right flex-shrink-0">{currentTime}</span>
+              <Slider
+                value={[progress]}
+                onValueChange={handleProgressChange}
+                max={100}
+                step={0.1}
+                className="flex-1"
+              />
+              <span className="text-xs text-muted-foreground w-10 md:w-12 flex-shrink-0">{duration}</span>
+            </div>
           </div>
         </div>
       </div>
