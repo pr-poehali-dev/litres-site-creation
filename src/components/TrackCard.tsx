@@ -143,7 +143,14 @@ export const TrackCard = ({ track, index, onEdit, selectionMode = false, isSelec
           />
         )}
         <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
-          <div className="w-full h-full rounded-full bg-gradient-to-tr from-primary via-primary/80 to-primary/60 p-0.5">
+          {isCurrentTrack && isPlaying && (
+            <>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/40 via-secondary/40 to-accent/40 animate-music-wave-1" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-secondary/30 via-primary/30 to-primary/30 animate-music-wave-2" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tl from-accent/20 via-primary/20 to-secondary/20 animate-music-wave-3" />
+            </>
+          )}
+          <div className={`w-full h-full rounded-full bg-gradient-to-tr from-primary via-primary/80 to-primary/60 p-0.5 relative z-10 ${isCurrentTrack && isPlaying ? 'animate-pulse-slow' : ''}`}>
             <div className="w-full h-full rounded-full bg-background p-0.5">
               {track.cover ? (
                 <img
