@@ -118,171 +118,201 @@ export const TrackCard = ({ track, index, onEdit, selectionMode = false, isSelec
         trackTitle={track.title}
       />
       <Card
-        className={`group overflow-hidden hover-lift elegant-shadow transition-all duration-300 animate-fade-in relative ${
+        className={`group relative overflow-hidden backdrop-blur-sm bg-gradient-to-br from-card/80 via-card/60 to-card/40 border-2 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 ${
+          isCurrentTrack && isPlaying 
+            ? 'border-primary/60 shadow-xl shadow-primary/30 scale-[1.01]' 
+            : 'border-border/40 hover:border-primary/40'
+        } ${
           track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin ? 'blur-sm' : ''
         } ${
-          selectionMode && isSelected ? 'ring-2 ring-primary' : ''
+          selectionMode && isSelected ? 'ring-4 ring-primary ring-offset-2' : ''
         }`}
-        style={{ animationDelay: `${index * 30}ms` }}
+        style={{ animationDelay: `${index * 40}ms` }}
         onClick={selectionMode ? onToggleSelect : undefined}
       >
+        {isCurrentTrack && isPlaying && (
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 animate-pulse pointer-events-none" />
+        )}
+
         {track.isAdultContent && !confirmedAdultTracks.includes(track.id) && !isAdmin && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 backdrop-blur-[2px] pointer-events-none">
-            <div className="bg-destructive text-destructive-foreground px-4 py-2 md:px-6 md:py-3 rounded-lg font-bold text-xl md:text-2xl shadow-lg pointer-events-auto blur-none">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none">
+            <div className="bg-destructive text-destructive-foreground px-6 py-3 rounded-xl font-bold text-2xl shadow-2xl pointer-events-auto blur-none border-2 border-destructive-foreground/20">
               18+
             </div>
           </div>
         )}
-      <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4">
-        {selectionMode && (
-          <Checkbox 
-            checked={isSelected}
-            onCheckedChange={onToggleSelect}
-            onClick={(e) => e.stopPropagation()}
-            className="flex-shrink-0"
-          />
-        )}
-        <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
-          {isCurrentTrack && isPlaying && (
-            <>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/40 via-secondary/40 to-accent/40 animate-music-wave-1" />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-secondary/30 via-primary/30 to-primary/30 animate-music-wave-2" />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tl from-accent/20 via-primary/20 to-secondary/20 animate-music-wave-3" />
-            </>
-          )}
-          <div className={`w-full h-full rounded-full bg-gradient-to-tr from-primary via-primary/80 to-primary/60 p-0.5 relative z-10 ${isCurrentTrack && isPlaying ? 'animate-pulse-slow' : ''}`}>
-            <div className="w-full h-full rounded-full bg-background p-0.5">
-              {track.cover ? (
-                <img
-                  src={track.cover}
-                  alt={track.title}
-                  className="w-full h-full object-cover rounded-full"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                  }}
-                />
-              ) : null}
-              <div className={`w-full h-full rounded-full bg-muted flex items-center justify-center ${track.cover ? 'hidden' : ''}`}>
-                <Icon name="Music" size={24} className="text-muted-foreground md:w-8 md:h-8" />
+
+        <div className="relative p-5">
+          <div className="flex items-start gap-4">
+            {selectionMode && (
+              <Checkbox 
+                checked={isSelected}
+                onCheckedChange={onToggleSelect}
+                onClick={(e) => e.stopPropagation()}
+                className="mt-2 flex-shrink-0"
+              />
+            )}
+
+            <div className="relative group/cover flex-shrink-0">
+              <div className="relative w-24 h-24 rounded-2xl overflow-hidden shadow-lg">
+                {isCurrentTrack && isPlaying && (
+                  <div className="absolute inset-0 z-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 animate-pulse" />
+                    <div className="absolute inset-0 border-4 border-primary/40 rounded-2xl animate-[ping_2s_ease-in-out_infinite]" />
+                  </div>
+                )}
+                
+                {track.cover ? (
+                  <img
+                    src={track.cover}
+                    alt={track.title}
+                    className="relative z-10 w-full h-full object-cover transition-transform duration-500 group-hover/cover:scale-110"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div className={`relative z-10 w-full h-full bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center ${track.cover ? 'hidden' : ''}`}>
+                  <Icon name="Music" size={40} className="text-primary/60" />
+                </div>
+
+                <div className="absolute inset-0 z-20 bg-black/60 opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm rounded-2xl">
+                  {canPlay ? (
+                    <Button
+                      size="icon"
+                      className="w-14 h-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 transform transition-transform hover:scale-110"
+                      onClick={handlePlayPause}
+                    >
+                      <Icon 
+                        name={isCurrentTrack && isPlaying ? "Pause" : "Play"} 
+                        size={24}
+                        fill="currentColor"
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="icon"
+                      className="w-14 h-14 rounded-full shadow-2xl"
+                      onClick={handlePurchase}
+                    >
+                      <Icon name="Lock" size={24} />
+                    </Button>
+                  )}
+                </div>
+
+                {isCurrentTrack && isPlaying && (
+                  <div className="absolute -bottom-2 -right-2 z-30 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg border-2 border-background animate-bounce">
+                    <Icon name="Volume2" size={14} className="text-primary-foreground" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0 pt-1">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg leading-tight line-clamp-1 mb-1 flex items-center gap-2">
+                    {track.title}
+                    {track.isAdultContent && (
+                      <span className="text-xs bg-destructive text-destructive-foreground px-2 py-1 rounded-md font-semibold flex-shrink-0 shadow-sm">
+                        18+
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-1 font-medium">{track.artist}</p>
+                </div>
+
+                {isAdmin && !selectionMode && (
+                  <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 rounded-lg hover:bg-primary/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit?.();
+                      }}
+                    >
+                      <Icon name="Edit" size={14} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm('Удалить трек?')) {
+                          deleteTrack(track.id);
+                        }
+                      }}
+                    >
+                      <Icon name="Trash2" size={14} />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-xs mb-3">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 backdrop-blur-sm">
+                  <Icon name="Music2" size={12} className="text-primary" />
+                  <span className="font-medium">{track.genre}</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 backdrop-blur-sm">
+                  <Icon name="Calendar" size={12} className="text-secondary" />
+                  <span className="font-medium">{track.year}</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 backdrop-blur-sm">
+                  <Icon name="Clock" size={12} className="text-accent" />
+                  <span className="font-medium">{track.duration}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                {!isFree ? (
+                  <div className="flex items-center gap-2">
+                    {isPurchased ? (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                        <Icon name="CheckCircle" size={14} />
+                        <span className="text-xs font-semibold">Куплено</span>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={handlePurchase}
+                        className="rounded-lg px-4 shadow-md hover:shadow-lg transition-all"
+                      >
+                        <Icon name="ShoppingCart" size={14} className="mr-1.5" />
+                        <span className="font-semibold">{track.price} ₽</span>
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
+                    <Icon name="Music" size={14} />
+                    <span className="text-xs font-semibold">Бесплатно</span>
+                  </div>
+                )}
+
+                {!selectionMode && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handlePlayPause}
+                    className="rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
+                  >
+                    <Icon 
+                      name={isCurrentTrack && isPlaying ? "Pause" : "Play"} 
+                      size={16}
+                      fill="currentColor"
+                    />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity rounded-full flex items-center justify-center">
-            {canPlay ? (
-              <Button
-                size="icon"
-                variant="secondary"
-                className="w-8 h-8 md:w-10 md:h-10 rounded-full pulse-glow"
-                onClick={handlePlayPause}
-              >
-                <Icon 
-                  name={isCurrentTrack && isPlaying ? "Pause" : "Play"} 
-                  size={16}
-                  className="md:w-5 md:h-5"
-                  fill="currentColor"
-                />
-              </Button>
-            ) : (
-              <Button
-                size="icon"
-                variant="secondary"
-                className="w-8 h-8 md:w-10 md:h-10 rounded-full"
-                onClick={handlePurchase}
-              >
-                <Icon 
-                  name="Lock" 
-                  size={16}
-                  className="md:w-5 md:h-5"
-                />
-              </Button>
-            )}
-          </div>
-          {isCurrentTrack && isPlaying && (
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-primary rounded-full flex items-center justify-center animate-pulse">
-              <Icon name="Volume2" size={10} className="text-primary-foreground md:w-3 md:h-3" />
-            </div>
-          )}
         </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base md:text-lg line-clamp-1 mb-0.5 md:mb-1 flex items-center gap-2">
-            {track.title}
-            {track.isAdultContent && (
-              <span className="text-xs bg-destructive text-destructive-foreground px-2 py-0.5 rounded font-normal flex-shrink-0">
-                18+
-              </span>
-            )}
-          </h3>
-          <p className="text-xs md:text-sm text-muted-foreground mb-1 md:mb-2 line-clamp-1">{track.artist}</p>
-          <div className="flex items-center gap-2 md:gap-3 text-xs text-muted-foreground flex-wrap">
-            {track.genre && (
-              <span className="flex items-center gap-1">
-                <Icon name="Music" size={10} className="md:w-3 md:h-3" />
-                <span className="line-clamp-1">{track.genre}</span>
-              </span>
-            )}
-            {track.year && (
-              <span className="hidden sm:flex items-center gap-1">
-                <Icon name="Calendar" size={10} className="md:w-3 md:h-3" />
-                {track.year}
-              </span>
-            )}
-            {track.duration && (
-              <span className="flex items-center gap-1">
-                <Icon name="Clock" size={10} className="md:w-3 md:h-3" />
-                {track.duration}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {!isFree && !isPurchased && !isAdmin && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-primary">{track.price} ₽</span>
-              <Button
-                size="sm"
-                variant="default"
-                className="h-8 md:h-10"
-                onClick={handlePurchase}
-              >
-                <Icon name="ShoppingCart" size={14} className="mr-1 md:mr-2 md:w-4 md:h-4" />
-                Купить
-              </Button>
-            </div>
-          )}
-          {isPurchased && !isAdmin && (
-            <span className="text-xs md:text-sm text-green-600 font-medium flex items-center gap-1">
-              <Icon name="Check" size={14} className="md:w-4 md:h-4" />
-              Куплено
-            </span>
-          )}
-          {isAdmin && (
-            <div className="flex gap-1">
-              {onEdit && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="text-primary hover:text-primary w-8 h-8 md:w-10 md:h-10"
-                  onClick={onEdit}
-                >
-                  <Icon name="Edit" size={16} className="md:w-[18px] md:h-[18px]" />
-                </Button>
-              )}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-destructive hover:text-destructive w-8 h-8 md:w-10 md:h-10"
-                onClick={() => deleteTrack(track.id)}
-              >
-                <Icon name="Trash2" size={16} className="md:w-[18px] md:h-[18px]" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-    </Card>
+      </Card>
     </>
   );
 };
