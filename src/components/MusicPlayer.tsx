@@ -21,6 +21,7 @@ export const MusicPlayer = () => {
   const [duration, setDuration] = useState('0:00');
   const [playCount, setPlayCount] = useState(0);
   const [isPlayingAd, setIsPlayingAd] = useState(false);
+  const [visualizerStyle, setVisualizerStyle] = useState<'bars' | 'wave' | 'circle' | 'spectrum'>('bars');
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -70,30 +71,109 @@ export const MusicPlayer = () => {
       animationRef.current = requestAnimationFrame(draw);
 
       analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-
-      const barCount = 24;
-      const barWidth = canvas.width / barCount;
-      const gap = 2;
       
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (let i = 0; i < barCount; i++) {
-        const dataIndex = Math.floor((i / barCount) * dataArrayRef.current.length);
-        let barHeight = (dataArrayRef.current[dataIndex] / 255) * canvas.height;
-        
-        if (!isPlaying) {
-          barHeight = Math.random() * 10 + 5;
+      if (visualizerStyle === 'bars') {
+        const barCount = 24;
+        const barWidth = canvas.width / barCount;
+        const gap = 2;
+
+        for (let i = 0; i < barCount; i++) {
+          const dataIndex = Math.floor((i / barCount) * dataArrayRef.current.length);
+          let barHeight = (dataArrayRef.current[dataIndex] / 255) * canvas.height;
+          
+          if (!isPlaying) {
+            barHeight = Math.random() * 10 + 5;
+          }
+
+          const x = i * barWidth;
+          const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+          
+          const hue = (i / barCount) * 60 + 260;
+          gradient.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.9)`);
+          gradient.addColorStop(1, `hsla(${hue}, 80%, 55%, 0.6)`);
+          
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x + gap / 2, canvas.height - barHeight, barWidth - gap, barHeight);
+        }
+      } else if (visualizerStyle === 'wave') {
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'hsla(262, 80%, 65%, 0.9)';
+        ctx.beginPath();
+
+        const sliceWidth = canvas.width / dataArrayRef.current.length;
+        let x = 0;
+
+        for (let i = 0; i < dataArrayRef.current.length; i++) {
+          const v = dataArrayRef.current[i] / 255.0;
+          const y = (v * canvas.height) / 2 + canvas.height / 2;
+
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+
+          x += sliceWidth;
         }
 
-        const x = i * barWidth;
-        const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-        
-        const hue = (i / barCount) * 60 + 260;
-        gradient.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.9)`);
-        gradient.addColorStop(1, `hsla(${hue}, 80%, 55%, 0.6)`);
-        
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x + gap / 2, canvas.height - barHeight, barWidth - gap, barHeight);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'hsla(280, 80%, 70%, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      } else if (visualizerStyle === 'circle') {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) - 10;
+
+        for (let i = 0; i < dataArrayRef.current.length; i++) {
+          const angle = (i / dataArrayRef.current.length) * Math.PI * 2;
+          let barHeight = (dataArrayRef.current[i] / 255) * radius * 0.6;
+          
+          if (!isPlaying) {
+            barHeight = Math.random() * 5 + 2;
+          }
+
+          const x1 = centerX + Math.cos(angle) * radius;
+          const y1 = centerY + Math.sin(angle) * radius;
+          const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+          const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+
+          const hue = (i / dataArrayRef.current.length) * 60 + 260;
+          ctx.strokeStyle = `hsla(${hue}, 80%, 65%, 0.8)`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      } else if (visualizerStyle === 'spectrum') {
+        const barCount = 48;
+        const barWidth = canvas.width / barCount;
+        const gap = 1;
+
+        for (let i = 0; i < barCount; i++) {
+          const dataIndex = Math.floor((i / barCount) * dataArrayRef.current.length);
+          let barHeight = (dataArrayRef.current[dataIndex] / 255) * canvas.height * 0.8;
+          
+          if (!isPlaying) {
+            barHeight = Math.random() * 8 + 3;
+          }
+
+          const x = i * barWidth;
+          const centerY = canvas.height / 2;
+          
+          const hue = (i / barCount) * 360;
+          const gradient = ctx.createLinearGradient(0, centerY - barHeight / 2, 0, centerY + barHeight / 2);
+          gradient.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.9)`);
+          gradient.addColorStop(0.5, `hsla(${hue}, 80%, 55%, 1)`);
+          gradient.addColorStop(1, `hsla(${hue}, 80%, 65%, 0.9)`);
+          
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x + gap / 2, centerY - barHeight / 2, barWidth - gap, barHeight);
+        }
       }
     };
 
@@ -104,7 +184,7 @@ export const MusicPlayer = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPlaying]);
+  }, [isPlaying, visualizerStyle]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -322,13 +402,54 @@ export const MusicPlayer = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="relative h-16 md:h-20 w-full rounded-lg overflow-hidden bg-gradient-to-b from-primary/5 to-background border border-primary/10">
-              <canvas 
-                ref={canvasRef} 
-                width={800} 
-                height={80}
-                className="w-full h-full"
-              />
+            <div className="relative">
+              <div className="relative h-16 md:h-20 w-full rounded-lg overflow-hidden bg-gradient-to-b from-primary/5 to-background border border-primary/10">
+                <canvas 
+                  ref={canvasRef} 
+                  width={800} 
+                  height={80}
+                  className="w-full h-full"
+                />
+              </div>
+              
+              <div className="absolute top-2 right-2 flex gap-1 bg-background/80 backdrop-blur-sm rounded-lg p-1 border border-border/50">
+                <Button
+                  size="icon"
+                  variant={visualizerStyle === 'bars' ? 'default' : 'ghost'}
+                  className="h-7 w-7"
+                  onClick={() => setVisualizerStyle('bars')}
+                  title="Столбцы"
+                >
+                  <Icon name="BarChart3" size={14} />
+                </Button>
+                <Button
+                  size="icon"
+                  variant={visualizerStyle === 'wave' ? 'default' : 'ghost'}
+                  className="h-7 w-7"
+                  onClick={() => setVisualizerStyle('wave')}
+                  title="Волны"
+                >
+                  <Icon name="Waves" size={14} />
+                </Button>
+                <Button
+                  size="icon"
+                  variant={visualizerStyle === 'circle' ? 'default' : 'ghost'}
+                  className="h-7 w-7"
+                  onClick={() => setVisualizerStyle('circle')}
+                  title="Круг"
+                >
+                  <Icon name="CircleDot" size={14} />
+                </Button>
+                <Button
+                  size="icon"
+                  variant={visualizerStyle === 'spectrum' ? 'default' : 'ghost'}
+                  className="h-7 w-7"
+                  onClick={() => setVisualizerStyle('spectrum')}
+                  title="Спектр"
+                >
+                  <Icon name="Activity" size={14} />
+                </Button>
+              </div>
             </div>
             
             <div className="flex items-center gap-2 md:gap-3">
