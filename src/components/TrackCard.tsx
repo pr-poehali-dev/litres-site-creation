@@ -147,17 +147,17 @@ export const TrackCard = ({ track, index, onEdit, selectionMode = false, isSelec
             <img
               src={track.cover}
               alt={track.title}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover rounded-full"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
               }}
             />
           ) : null}
-          <div className={`w-full h-full rounded-lg bg-muted flex items-center justify-center ${track.cover ? 'hidden' : ''}`}>
+          <div className={`w-full h-full rounded-full bg-muted flex items-center justify-center ${track.cover ? 'hidden' : ''}`}>
             <Icon name="Music" size={24} className="text-muted-foreground md:w-8 md:h-8" />
           </div>
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity rounded-full flex items-center justify-center">
             {canPlay ? (
               <Button
                 size="icon"
