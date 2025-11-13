@@ -21,7 +21,14 @@ export const MusicPlayer = () => {
   const [duration, setDuration] = useState('0:00');
   const [playCount, setPlayCount] = useState(0);
   const [isPlayingAd, setIsPlayingAd] = useState(false);
-  const [visualizerStyle, setVisualizerStyle] = useState<'bars' | 'wave' | 'circle' | 'spectrum'>('bars');
+  const [visualizerStyle, setVisualizerStyle] = useState<'bars' | 'wave' | 'circle' | 'spectrum'>(() => {
+    const saved = localStorage.getItem('visualizerStyle');
+    return (saved as 'bars' | 'wave' | 'circle' | 'spectrum') || 'bars';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('visualizerStyle', visualizerStyle);
+  }, [visualizerStyle]);
 
   useEffect(() => {
     if (!audioRef.current) return;
