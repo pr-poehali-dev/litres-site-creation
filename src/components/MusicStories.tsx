@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import funcUrls from '../func2url.json';
+import funcUrls from '../../backend/func2url.json';
 
 interface Story {
   id: number;
