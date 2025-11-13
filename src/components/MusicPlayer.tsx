@@ -25,10 +25,48 @@ export const MusicPlayer = () => {
     const saved = localStorage.getItem('visualizerStyle');
     return (saved as 'bars' | 'wave' | 'circle' | 'spectrum') || 'bars';
   });
+  const [colorScheme, setColorScheme] = useState<'purple' | 'rainbow' | 'blue' | 'fire' | 'ocean'>(() => {
+    const saved = localStorage.getItem('visualizerColorScheme');
+    return (saved as 'purple' | 'rainbow' | 'blue' | 'fire' | 'ocean') || 'purple';
+  });
 
   useEffect(() => {
     localStorage.setItem('visualizerStyle', visualizerStyle);
   }, [visualizerStyle]);
+
+  useEffect(() => {
+    localStorage.setItem('visualizerColorScheme', colorScheme);
+  }, [colorScheme]);
+
+  const getColors = (index: number, total: number) => {
+    let hue = 0;
+    let sat = 80;
+    let light = 65;
+
+    switch (colorScheme) {
+      case 'purple':
+        hue = (index / total) * 60 + 260;
+        break;
+      case 'rainbow':
+        hue = (index / total) * 360;
+        break;
+      case 'blue':
+        hue = (index / total) * 60 + 180;
+        break;
+      case 'fire':
+        hue = (index / total) * 60;
+        sat = 90;
+        light = 60;
+        break;
+      case 'ocean':
+        hue = (index / total) * 80 + 160;
+        sat = 70;
+        light = 60;
+        break;
+    }
+
+    return { hue, sat, light };
+  };
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -97,16 +135,17 @@ export const MusicPlayer = () => {
           const x = i * barWidth;
           const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
           
-          const hue = (i / barCount) * 60 + 260;
-          gradient.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.9)`);
-          gradient.addColorStop(1, `hsla(${hue}, 80%, 55%, 0.6)`);
+          const { hue, sat, light } = getColors(i, barCount);
+          gradient.addColorStop(0, `hsla(${hue}, ${sat}%, ${light}%, 0.9)`);
+          gradient.addColorStop(1, `hsla(${hue}, ${sat}%, ${light - 10}%, 0.6)`);
           
           ctx.fillStyle = gradient;
           ctx.fillRect(x + gap / 2, canvas.height - barHeight, barWidth - gap, barHeight);
         }
       } else if (visualizerStyle === 'wave') {
+        const { hue, sat, light } = getColors(0.5, 1);
         ctx.lineWidth = 3;
-        ctx.strokeStyle = 'hsla(262, 80%, 65%, 0.9)';
+        ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, 0.9)`;
         ctx.beginPath();
 
         const sliceWidth = canvas.width / dataArrayRef.current.length;
@@ -127,7 +166,7 @@ export const MusicPlayer = () => {
 
         ctx.stroke();
 
-        ctx.strokeStyle = 'hsla(280, 80%, 70%, 0.5)';
+        ctx.strokeStyle = `hsla(${hue + 20}, ${sat}%, ${light + 5}%, 0.5)`;
         ctx.lineWidth = 2;
         ctx.stroke();
       } else if (visualizerStyle === 'circle') {
@@ -148,8 +187,8 @@ export const MusicPlayer = () => {
           const x2 = centerX + Math.cos(angle) * (radius + barHeight);
           const y2 = centerY + Math.sin(angle) * (radius + barHeight);
 
-          const hue = (i / dataArrayRef.current.length) * 60 + 260;
-          ctx.strokeStyle = `hsla(${hue}, 80%, 65%, 0.8)`;
+          const { hue, sat, light } = getColors(i, dataArrayRef.current.length);
+          ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, 0.8)`;
           ctx.lineWidth = 3;
           ctx.beginPath();
           ctx.moveTo(x1, y1);
@@ -172,11 +211,11 @@ export const MusicPlayer = () => {
           const x = i * barWidth;
           const centerY = canvas.height / 2;
           
-          const hue = (i / barCount) * 360;
+          const { hue, sat, light } = getColors(i, barCount);
           const gradient = ctx.createLinearGradient(0, centerY - barHeight / 2, 0, centerY + barHeight / 2);
-          gradient.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.9)`);
-          gradient.addColorStop(0.5, `hsla(${hue}, 80%, 55%, 1)`);
-          gradient.addColorStop(1, `hsla(${hue}, 80%, 65%, 0.9)`);
+          gradient.addColorStop(0, `hsla(${hue}, ${sat}%, ${light}%, 0.9)`);
+          gradient.addColorStop(0.5, `hsla(${hue}, ${sat}%, ${light - 10}%, 1)`);
+          gradient.addColorStop(1, `hsla(${hue}, ${sat}%, ${light}%, 0.9)`);
           
           ctx.fillStyle = gradient;
           ctx.fillRect(x + gap / 2, centerY - barHeight / 2, barWidth - gap, barHeight);
@@ -191,7 +230,7 @@ export const MusicPlayer = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPlaying, visualizerStyle]);
+  }, [isPlaying, visualizerStyle, colorScheme]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -419,43 +458,93 @@ export const MusicPlayer = () => {
                 />
               </div>
               
-              <div className="absolute top-2 right-2 flex gap-1 bg-background/80 backdrop-blur-sm rounded-lg p-1 border border-border/50">
-                <Button
-                  size="icon"
-                  variant={visualizerStyle === 'bars' ? 'default' : 'ghost'}
-                  className="h-7 w-7"
-                  onClick={() => setVisualizerStyle('bars')}
-                  title="Столбцы"
-                >
-                  <Icon name="BarChart3" size={14} />
-                </Button>
-                <Button
-                  size="icon"
-                  variant={visualizerStyle === 'wave' ? 'default' : 'ghost'}
-                  className="h-7 w-7"
-                  onClick={() => setVisualizerStyle('wave')}
-                  title="Волны"
-                >
-                  <Icon name="Waves" size={14} />
-                </Button>
-                <Button
-                  size="icon"
-                  variant={visualizerStyle === 'circle' ? 'default' : 'ghost'}
-                  className="h-7 w-7"
-                  onClick={() => setVisualizerStyle('circle')}
-                  title="Круг"
-                >
-                  <Icon name="CircleDot" size={14} />
-                </Button>
-                <Button
-                  size="icon"
-                  variant={visualizerStyle === 'spectrum' ? 'default' : 'ghost'}
-                  className="h-7 w-7"
-                  onClick={() => setVisualizerStyle('spectrum')}
-                  title="Спектр"
-                >
-                  <Icon name="Activity" size={14} />
-                </Button>
+              <div className="absolute top-2 right-2 flex gap-2">
+                <div className="flex gap-1 bg-background/80 backdrop-blur-sm rounded-lg p-1 border border-border/50">
+                  <Button
+                    size="icon"
+                    variant={visualizerStyle === 'bars' ? 'default' : 'ghost'}
+                    className="h-7 w-7"
+                    onClick={() => setVisualizerStyle('bars')}
+                    title="Столбцы"
+                  >
+                    <Icon name="BarChart3" size={14} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant={visualizerStyle === 'wave' ? 'default' : 'ghost'}
+                    className="h-7 w-7"
+                    onClick={() => setVisualizerStyle('wave')}
+                    title="Волны"
+                  >
+                    <Icon name="Waves" size={14} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant={visualizerStyle === 'circle' ? 'default' : 'ghost'}
+                    className="h-7 w-7"
+                    onClick={() => setVisualizerStyle('circle')}
+                    title="Круг"
+                  >
+                    <Icon name="CircleDot" size={14} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant={visualizerStyle === 'spectrum' ? 'default' : 'ghost'}
+                    className="h-7 w-7"
+                    onClick={() => setVisualizerStyle('spectrum')}
+                    title="Спектр"
+                  >
+                    <Icon name="Activity" size={14} />
+                  </Button>
+                </div>
+
+                <div className="flex gap-1 bg-background/80 backdrop-blur-sm rounded-lg p-1 border border-border/50">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 hover:bg-transparent"
+                    onClick={() => setColorScheme('purple')}
+                    title="Фиолетовая"
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 ${colorScheme === 'purple' ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}`} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 hover:bg-transparent"
+                    onClick={() => setColorScheme('rainbow')}
+                    title="Радуга"
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 ${colorScheme === 'rainbow' ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}`} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 hover:bg-transparent"
+                    onClick={() => setColorScheme('blue')}
+                    title="Синяя"
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 ${colorScheme === 'blue' ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}`} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 hover:bg-transparent"
+                    onClick={() => setColorScheme('fire')}
+                    title="Огонь"
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-gradient-to-r from-red-500 to-orange-500 ${colorScheme === 'fire' ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}`} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 hover:bg-transparent"
+                    onClick={() => setColorScheme('ocean')}
+                    title="Океан"
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 ${colorScheme === 'ocean' ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}`} />
+                  </Button>
+                </div>
               </div>
             </div>
             
