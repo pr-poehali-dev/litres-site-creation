@@ -28,7 +28,8 @@ export const YooMoneyPayment = ({ book, purchaseType = 'download', onSuccess }: 
         ? book.ebookPrice 
         : book.discountPrice || book.price;
 
-      const url = `${funcUrls.books}/yoomoney-form?bookId=${book.id}&userEmail=${user.email}&amount=${price}&purchaseType=${purchaseType}`;
+      const label = `${user.email}_${purchaseType}_${Date.now()}`;
+      const url = `${funcUrls.books}?action=yoomoney-form&bookId=${book.id}&userEmail=${user.email}&amount=${price}&purchaseType=${purchaseType}&label=${label}`;
       console.log('Requesting payment data:', url);
       
       const response = await fetch(url);
