@@ -14,11 +14,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { exportToPDF, exportToExcel } from '@/utils/exportPurchases';
+import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { purchases } = usePurchases();
+  const { toast } = useToast();
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'expensive' | 'cheap'>('newest');
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
 
@@ -59,6 +68,38 @@ const Profile = () => {
 
   const totalSpent = purchases.reduce((sum, purchase) => sum + purchase.totalAmount, 0);
   const totalBooks = purchases.reduce((sum, purchase) => sum + purchase.items.length, 0);
+
+  const handleExportPDF = () => {
+    try {
+      exportToPDF(sortedPurchases, user.name);
+      toast({
+        title: 'Экспорт успешен',
+        description: 'История покупок сохранена в PDF',
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка экспорта',
+        description: 'Не удалось создать PDF файл',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleExportExcel = () => {
+    try {
+      exportToExcel(sortedPurchases, user.name);
+      toast({
+        title: 'Экспорт успешен',
+        description: 'История покупок сохранена в Excel',
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка экспорта',
+        description: 'Не удалось создать Excel файл',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,22 +182,42 @@ const Profile = () => {
               </Card>
             ) : (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-2">
                     <Icon name="Filter" size={20} className="text-muted-foreground" />
                     <span className="text-sm font-medium">Сортировка:</span>
+                    <Select value={sortOrder} onValueChange={(value: any) => setSortOrder(value)}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Сначала новые</SelectItem>
+                        <SelectItem value="oldest">Сначала старые</SelectItem>
+                        <SelectItem value="expensive">Сначала дорогие</SelectItem>
+                        <SelectItem value="cheap">Сначала дешевые</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select value={sortOrder} onValueChange={(value: any) => setSortOrder(value)}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Сначала новые</SelectItem>
-                      <SelectItem value="oldest">Сначала старые</SelectItem>
-                      <SelectItem value="expensive">Сначала дорогие</SelectItem>
-                      <SelectItem value="cheap">Сначала дешевые</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Icon name="Download" size={16} className="mr-2" />
+                        Экспортировать
+                        <Icon name="ChevronDown" size={16} className="ml-2" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleExportPDF}>
+                        <Icon name="FileText" size={16} className="mr-2" />
+                        Скачать PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportExcel}>
+                        <Icon name="Table" size={16} className="mr-2" />
+                        Скачать Excel
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <div className="space-y-4">
                 {sortedPurchases.map((purchase) => {
